@@ -68,7 +68,7 @@ class Epistatic():
                          'your_data2',
                          'replicate_list',
                          'mutations_list',
-                         'mutant_list'
+                         'mutant_list',
                          'mutation_number',
                          'replicate_number'):
             setattr(self,variable,local[variable])
@@ -543,11 +543,13 @@ class Epistatic():
 
 
 if __name__ == "__main__":
-    exit(0)
-    # TODO finish argparse
     # your_study, mutation_number, replicate_number, your_data, your_data2, replicate_list, mutations_list)
     parser = argparse.ArgumentParser(description=__description__)
-    parser.add_argument("xxx", help="xxx")
+    parser.add_argument("your_study", help="Do you use selectivity or conversion values? Please answer with S (Selectivity) or C (Conversion)")
+    parser.add_argument("mutation_number",type=int, help="Please indicate your mutation number:")
+    parser.add_argument("replicate_number",type=int, help="Please indicate your replicate number (if some replicates are faulty, please fill the table with the average of the others otherwise the program might give unexpected results)")
+    parser.add_argument("your_data", help="Please enter the name of your replicate table (don't forget the file extension !): (Put the name of the excel file you want your first table to be in)")
+    parser.add_argument("your_data2", help="Please enter the name of the file you want your results in (don't forget the file extension !): (same here but for the excel you want your results in)")
     parser.add_argument('--version', action='version', version=__version__)
     args = parser.parse_args()
-    Epistatic(**args)
+    Epistatic(**vars(args),replicate_list=[i+1 for i in range(args.replicate_number)],mutations_list=['M{}'.format(i+1) for i in range(args.mutation_number)])
