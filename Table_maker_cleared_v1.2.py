@@ -20,8 +20,16 @@ import argparse, math, random, numpy, pandas
 
 class Epistatic():
     """
-            Run thusly:
-                Epistatic(your_study, mutation_number,replicate_number,your_data,outfile,replicate_list,mutations_list)
+
+    The original functionality of the script is retained as the class method `user_input` which will ask for input.
+    The altered usage has a way of creating the scheme thusly:
+                Epistatic.create_input_scheme('C', '3', '3', 'test.xlsx')
+    Running from file and calculating and saving:
+                Epistatic.from_file('C', 'raw.xlsx').calculate().save('wow.xlsx')
+    Running from panda table:
+                Epistatic.from_pandas('C',table)
+    Running from values:
+                Epistatic(your_study, mutation_number,replicate_number,replicate_list,mutations_list, mutant_list,foundment_values,data_array,replicate_matrix)
             Methods:
             * create_combination
             * mean_and_sd_maker
@@ -39,26 +47,31 @@ class Epistatic():
     """
 
     @classmethod
-    def create_input_scheme(cls,your_study, mutation_number,replicate_number,outfile,replicate_list=None,mutations_list=None, mutant_list=None):
+    def create_input_scheme(cls,your_study, mutation_number,replicate_number,outfile='scheme.xlsx',replicate_list=None,mutations_list=None, mutant_list=None):
         ## Sanitise
         assert isinstance(your_study, str), 'Study can only be str value'
         mutation_number = int(mutation_number)
         replicate_number = int(replicate_number)
         assert isinstance(outfile, str), 'For now outfile and outfile2 can only be str value'
         for l in (replicate_list, mutations_list):
-            assert isinstance(l, list), 'replicate list and mutations_list can only be lists'
+            if l:
+                assert isinstance(l, list), 'replicate list and mutations_list can only be blank or lists of str'
 
         # This is really bad form. I modified the code before understanding that there were two programs in one.
-        self=cls(your_study, mutation_number,replicate_number,outfile,replicate_list,mutations_list, mutant_list)
+        self=cls(your_study=your_study,
+                 mutation_number=mutation_number,
+                 replicate_number=replicate_number,
+                 replicate_list=replicate_list,
+                 mutations_list=mutations_list,
+                 mutant_list=mutant_list)
 
         # these lines are very imortant to make a list of the mutations, a list of the replicates names and the mutants names. They will be used to make the table and combinations.
 
         Mutant_number = len(
             self.create_combination())  # the number of mutants if equal to the number of combinations
-        box = ["X"] * Mutant_number * (
-                self.mutation_number + self.replicate_number)  # here we make a number of empty cases filled with "X"proportional to the number of mutants and mutations
-        final_table1 = numpy.reshape(box, ((Mutant_number), (self.mutation_number + len(
-            replicate_list))))  # here we make a matrix with the boxes above with the number of rows being equal to the number of mutants and the number of column being equal to the number of mutations + the number of replicates
+        box = ["X"] * Mutant_number * (self.mutation_number + self.replicate_number)  # here we make a number of empty cases filled with "X"proportional to the number of mutants and mutations
+        final_table1 = numpy.reshape(box, (Mutant_number, (self.mutation_number + self.replicate_number)))
+        # here we make a matrix with the boxes above with the number of rows being equal to the number of mutants and the number of column being equal to the number of mutations + the number of replicates
 
         value_list = [[mutant[combinations] for combinations in mutant] for mutant in self.create_combination()]
         # this creates a list of the the combinations
@@ -67,7 +80,7 @@ class Epistatic():
 
         excel_table1 = pandas.DataFrame(self.table_filler(final_table1, final_value_list),
                                         columns=self.mutations_list + self.replicate_list, index=self.mutant_list)
-        writer = pandas.ExcelWriter(self.outfile)
+        writer = pandas.ExcelWriter(outfile)
         excel_table1.to_excel(writer, sheet_name="sheet_name",
                               index=True)  # finally we write everything on a new excel, of which the name is given by the user
         writer.close()
@@ -107,6 +120,18 @@ class Epistatic():
 
 
     def __init__(self, your_study, mutation_number,replicate_number,replicate_list=None,mutations_list=None, mutant_list=None,foundment_values=None,data_array=None,replicate_matrix=None):
+        """
+
+        :param your_study: Do you use selectivity or conversion values? Please answer with S (Selectivity) or C (Conversion):
+        :param mutation_number: Please indicate your mutation number:
+        :param replicate_number: Please indicate your replicate number (if some replicates are faulty, please fill the table with the average of the others otherwise the program might give unexpected results) :
+        :param replicate_list (optinal): Replicate n°%s
+        :param mutations_list (optinal): Please indicate the mutation n°%s:
+        :param mutant_list (optinal):
+        :param foundment_values (optinal):  The +/- np array
+        :param data_array (optinal):        All the np array
+        :param replicate_matrix (optinal):  The number part of the np array
+        """
         ## Compute
         if not mutations_list:
             mutations_list = ['M{}'.format(i) for i in range(1, mutation_number + 1)]
@@ -202,19 +227,6 @@ class Epistatic():
         self.all_of_it = numpy.c_[all_of_it, epistasis]
         # this all_of_it value is all the data we need, across the program we complete it as it goes
         return self
-
-    def _old_init(self, your_study, mutation_number,replicate_number,your_data,outfile,replicate_list=None,mutations_list=None, mutant_list=None):
-        """
-        :param your_study:  Do you use selectivity or conversion values? Please answer with S (Selectivity) or C (Conversion):
-        :param mutation_number: Please indicate your mutation number:
-        :param replicate_number: Please indicate your replicate number (if some replicates are faulty, please fill the table with the average of the others otherwise the program might give unexpected results) :
-        :param your_data: Please enter the name of your replicate table (don't forget the file extension !):
-        :param outfile: Please enter the name of the file you want your results in (don't forget the file extension !):
-        :param replicate_list: Replicate n°%s
-        :param mutations_list: Please indicate the mutation n°%s:
-        """
-
-
 
     ##### Other methods
     def save(self, outfile='out.xlsx'):
@@ -594,13 +606,11 @@ class Epistatic():
         for elt2 in range(1, mutation_number + 1):
             mutations_list.append(input("Please indicate the mutation n°%s: " % (elt2)))
         #call class to make instance
-        return cls(your_study, mutation_number,replicate_number,your_data,outfile,replicate_list,mutations_list)
-
-
+        Epistatic.create_input_scheme(your_study, mutation_number,replicate_number,your_data,replicate_list=replicate_list,mutations_list=mutations_list)
+        input('Please add data to the file {},save and then press the Any key.'.format(your_data))
+        Epistatic.from_file(your_study, your_data).calculate().save(outfile)
 
 if __name__ == "__main__":
-    Epistatic.from_file('C','raw.xlsx').calculate().save('wow.xlsx')
-    exit()
     # your_study, mutation_number, replicate_number, your_data, outfile, replicate_list, mutations_list)
     parser = argparse.ArgumentParser(description=__description__)
     parser.add_argument("your_study", help="Do you use selectivity or conversion values? Please answer with S (Selectivity) or C (Conversion)")
@@ -610,4 +620,4 @@ if __name__ == "__main__":
     parser.add_argument("outfile", help="Please enter the name of the file you want your results in (don't forget the file extension !): (same here but for the excel you want your results in)")
     parser.add_argument('--version', action='version', version=__version__)
     args = parser.parse_args()
-    Epistatic(**vars(args),replicate_list=[i+1 for i in range(args.replicate_number)],mutations_list=['M{}'.format(i+1) for i in range(args.mutation_number)])
+    #TODO... alter
