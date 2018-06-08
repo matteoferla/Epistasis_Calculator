@@ -19,59 +19,40 @@ import argparse, math, random, numpy, pandas
 ##### METHODS #######
 
 class Epistatic():
-    def __init__(self, your_study, mutation_number,replicate_number,your_data,your_data2,replicate_list,mutations_list):
-        """
-        Run thusly:
-            Epistatic(your_study, mutation_number,replicate_number,your_data,your_data2,replicate_list,mutations_list)
-        Methods:
-        * create_combination
-        * mean_and_sd_maker
-        * origin_finder
-        * please_more_combinations
-        * table_filler
-        * theoretical_stats_conversion
-        * theoretical_stats_selectivity
-        * value_list_sorter
-        * what_epistasis_sign_conversion
-        * what_epistasis_sign_selectivity
-        Class method: user_input for interactive input. (no parameters! `Epistasis.user_input()`)
-        Attributes:
-        TODO
+    """
+            Run thusly:
+                Epistatic(your_study, mutation_number,replicate_number,your_data,outfile,replicate_list,mutations_list)
+            Methods:
+            * create_combination
+            * mean_and_sd_maker
+            * origin_finder
+            * please_more_combinations
+            * table_filler
+            * theoretical_stats_conversion
+            * theoretical_stats_selectivity
+            * value_list_sorter
+            * what_epistasis_sign_conversion
+            * what_epistasis_sign_selectivity
+            Class method: user_input for interactive input. (no parameters! `Epistasis.user_input()`)
+            Attributes:
+            TODO
+    """
 
-        :param your_study:  Do you use selectivity or conversion values? Please answer with S (Selectivity) or C (Conversion):
-        :param mutation_number: Please indicate your mutation number:
-        :param replicate_number: Please indicate your replicate number (if some replicates are faulty, please fill the table with the average of the others otherwise the program might give unexpected results) :
-        :param your_data: Please enter the name of your replicate table (don't forget the file extension !):
-        :param your_data2: Please enter the name of the file you want your results in (don't forget the file extension !):
-        :param replicate_list: Replicate n°%s
-        :param mutations_list: Please indicate the mutation n°%s:
-        """
+    @classmethod
+    def create_input_scheme(cls,your_study, mutation_number,replicate_number,outfile,replicate_list=None,mutations_list=None, mutant_list=None):
         ## Sanitise
-        assert isinstance(your_study,str), 'Study can only be str value'
-        mutation_number=int(mutation_number)
-        replicate_number=int(replicate_number)
-        for s in (your_data,your_data2):
-            assert isinstance(s,str), 'For now your_data and your_data2 can only be str value'
-        for l in (replicate_list,mutations_list):
-            assert isinstance(l,list), 'replicate list and mutations_list can only be lists'
+        assert isinstance(your_study, str), 'Study can only be str value'
+        mutation_number = int(mutation_number)
+        replicate_number = int(replicate_number)
+        assert isinstance(outfile, str), 'For now outfile and outfile2 can only be str value'
+        for l in (replicate_list, mutations_list):
+            assert isinstance(l, list), 'replicate list and mutations_list can only be lists'
 
-        ## Compute
-        mutant_list = ["Mutant %s" % (elt4) for elt4 in range(1, 2 ** mutation_number + 1)]
+        # This is really bad form. I modified the code before understanding that there were two programs in one.
+        self=cls(your_study, mutation_number,replicate_number,outfile,replicate_list,mutations_list, mutant_list)
+
         # these lines are very imortant to make a list of the mutations, a list of the replicates names and the mutants names. They will be used to make the table and combinations.
 
-        ## Save
-        local=locals()
-        for variable in ('your_study',
-                         'mutation_number',
-                         'replicate_number',
-                         'your_data',
-                         'your_data2',
-                         'replicate_list',
-                         'mutations_list',
-                         'mutant_list',
-                         'mutation_number',
-                         'replicate_number'):
-            setattr(self,variable,local[variable])
         Mutant_number = len(
             self.create_combination())  # the number of mutants if equal to the number of combinations
         box = ["X"] * Mutant_number * (
@@ -86,30 +67,87 @@ class Epistatic():
 
         excel_table1 = pandas.DataFrame(self.table_filler(final_table1, final_value_list),
                                         columns=self.mutations_list + self.replicate_list, index=self.mutant_list)
-        writer = pandas.ExcelWriter(self.your_data)
+        writer = pandas.ExcelWriter(self.outfile)
         excel_table1.to_excel(writer, sheet_name="sheet_name",
                               index=True)  # finally we write everything on a new excel, of which the name is given by the user
         writer.close()
 
-        # from here the second table code
+    @classmethod
+    def from_file(cls,your_study, infile):
+        # No sanitisation... TODO
+        table = pandas.read_excel(infile)  # here we take the input given by the user in the excel tqble we previously generated
+        return cls.from_pandas(your_study, table)
 
-        table1 = pandas.read_excel(
-            self.your_data)  # here we take the input given by the user in the excel tqble we previously generated
-        foundment = table1.iloc[:,
-                    :self.mutation_number]  # foundment is the matrix of all the signs and mutants we obtained above
-        total_replicate_data = table1.iloc[:, self.mutation_number:]
-        self.replicate_matrix = total_replicate_data.values  # this isolates the values that the user put in the input excel file. That way we obtain a matrix with the number of lines = number of mutants and number of columns = number of replicates
-        data_array = table1.values  # This is all the data (signs/mutants and associated replicates)
+    @classmethod
+    def from_pandas(cls,your_study, table):
+        # Determine
+        for mutation_number, v in enumerate(table.iloc[0]):
+            if str(v) not in '-+':
+                break
+        replicate_number = len(table.iloc[0]) - mutation_number
+        mutations_list=list(table)[:mutation_number]
+        replicate_list=list(table)[mutation_number:]
+        mutant_list = list(table.index)
+
+        foundment = table.iloc[:,:mutation_number]  # foundment is the matrix of all the signs and mutants we obtained above
+        foundment_values = foundment.values
+        total_replicate_data = table.iloc[:, mutation_number:]
+        replicate_matrix = total_replicate_data.values  # this isolates the values that the user put in the input excel file. That way we obtain a matrix with the number of lines = number of mutants and number of columns = number of replicates
+        data_array = table.values  # This is all the data (signs/mutants and associated replicates)
+        # none of the data passed is a pandas table...
+        return cls(your_study=your_study,
+                   mutation_number=mutation_number,
+                   replicate_number=replicate_number,
+                   replicate_list=replicate_list,
+                   mutations_list=mutations_list,
+                   mutant_list=mutant_list,
+                   foundment_values=foundment_values,
+                   data_array=data_array,
+                   replicate_matrix=replicate_matrix)
+
+
+    def __init__(self, your_study, mutation_number,replicate_number,replicate_list=None,mutations_list=None, mutant_list=None,foundment_values=None,data_array=None,replicate_matrix=None):
+        ## Compute
+        if not mutations_list:
+            mutations_list = ['M{}'.format(i) for i in range(1, mutation_number + 1)]
+        if not replicate_list:
+            replicate_list = ["Replicate n°%s" % (elt3) for elt3 in range(1, replicate_number + 1)]
+        if not mutant_list:
+            mutant_list = ["Mutant %s" % (elt4) for elt4 in range(1, 2 ** mutation_number + 1)]
+        ## Save
+        local = locals()
+        for variable in ('your_study',
+                         'mutation_number',
+                         'replicate_number',
+                         'replicate_list',
+                         'mutations_list',
+                         'mutant_list',
+                         'mutation_number',
+                         'replicate_number',
+                         'foundment_values',
+                         'replicate_matrix',
+                         'data_array'):
+            setattr(self, variable, local[variable])
+        # Preallocation
+        self.mean_and_sd_dic=None
+        self.mean_and_sd_array=None
+        self.all_of_it=None
+        self.final_comb_table=None
+        self.combs_only=None
+        self.comb_index=None
+
+    def calculate(self):
+        if type(self.foundment_values) is None:
+            raise AssertionError('No data')
 
         # This function gives a tuple (dictionary of mutants associated with mean and std, array of mean and std)
-        self.mean_and_sd_dic = self.mean_and_sd_maker(data_array)[
-            0]  # here we just take the first element of the tuple, which is the dictionarry. I frankly don't even remember why I did a tuple and not just the dictionary but hey)
-        self.mean_and_sd_array = numpy.reshape(self.mean_and_sd_maker(data_array)[1], ((Mutant_number), 2))
-        foundment_values = foundment.values  # this line is to obtain readable values from the variable foundment, which will then be a matrix of signs.
+        self.mean_and_sd_dic = self.mean_and_sd_maker()[0]  # here we just take the first element of the tuple, which is the dictionarry. I frankly don't even remember why I did a tuple and not just the dictionary but hey)
+        # line with Mutant_number
+        # self.mean_and_sd_array = numpy.reshape(self.mean_and_sd_maker(data_array)[1], ((Mutant_number), 2))
+        self.mean_and_sd_array = numpy.reshape(self.mean_and_sd_maker()[1], (len(self.create_combination()), 2))
+        origins = self.origin_finder()
 
-        origins = self.origin_finder(foundment_values)
-
-        all_combinations = self.please_more_combinations(origins, foundment_values)
+        all_combinations = self.please_more_combinations(origins)
 
         # here will be made the combinations table
         count_list = []
@@ -123,10 +161,7 @@ class Epistatic():
                     all_combinations.remove(elt2)
                     ordered_combs.append(elt2)
         # I think this was to remove any potential duplicate of combinations that somehow ended up in the list
-
-        comb_index = []
-        for elt in range(1, len(ordered_combs) + 1):
-            comb_index.append("Combination n°%s" % (elt))
+        self.comb_index = ["Combination n°%s" % (elt) for elt in range(1, len(ordered_combs) + 1)]
         # this line is important for the final table, it gives a proper name to each combination
 
         self.combs_only = [elt[1] for elt in ordered_combs]
@@ -142,13 +177,15 @@ class Epistatic():
         reshaped_combs = numpy.reshape(self.combs_only, ((len(signs_only), 1)))
         # reshqping everything to have a god format for the final table
 
+        #so a method (the origin one) was altering foundament and here is reverted. I made a copy of it as it was a fishy piece of code,
+        # so no reconversion needed.
         self.final_comb_table = numpy.c_[reshaped_signs, reshaped_combs]
         self.final_comb_table[self.final_comb_table == 1] = "+"
         self.final_comb_table[self.final_comb_table == 0] = "-"
-        foundment_values[foundment_values == 1] = "+"
-        foundment_values[foundment_values == 0] = "-"  # reconverting all 1 and 0 into + and -
-        foundment_values = numpy.c_[
-            foundment_values, self.mean_and_sd_array]  # we also add the averages and standard deviation (experimental) to the sign matrix
+        self.foundment_values[self.foundment_values == 1] = "+"
+        self.foundment_values[self.foundment_values == 0] = "-"  # reconverting all 1 and 0 into + and -
+        self.foundment_values = numpy.c_[
+            self.foundment_values, self.mean_and_sd_array]  # we also add the averages and standard deviation (experimental) to the sign matrix
 
         # this time for conversion, which is a little different albeit very close.
 
@@ -162,23 +199,38 @@ class Epistatic():
             epistasis = self.what_epistasis_sign_conversion(all_of_it)
         elif self.your_study == "S":
             epistasis = self.what_epistasis_sign_selectivity(all_of_it)
-        all_of_it = numpy.c_[all_of_it, epistasis]
+        self.all_of_it = numpy.c_[all_of_it, epistasis]
         # this all_of_it value is all the data we need, across the program we complete it as it goes
+        return self
 
+    def _old_init(self, your_study, mutation_number,replicate_number,your_data,outfile,replicate_list=None,mutations_list=None, mutant_list=None):
+        """
+        :param your_study:  Do you use selectivity or conversion values? Please answer with S (Selectivity) or C (Conversion):
+        :param mutation_number: Please indicate your mutation number:
+        :param replicate_number: Please indicate your replicate number (if some replicates are faulty, please fill the table with the average of the others otherwise the program might give unexpected results) :
+        :param your_data: Please enter the name of your replicate table (don't forget the file extension !):
+        :param outfile: Please enter the name of the file you want your results in (don't forget the file extension !):
+        :param replicate_list: Replicate n°%s
+        :param mutations_list: Please indicate the mutation n°%s:
+        """
+
+
+
+    ##### Other methods
+    def save(self, outfile='out.xlsx'):
         suppinfo = ["Combinations", "Experimental average", "Experimental standard deviation", "Thoretical average",
                     "Theoretical standard deviation", "Exp.avg - Theor.avg", "Epistasis type"]
 
-        excel_table2 = pandas.DataFrame(all_of_it, columns=self.mutations_list + suppinfo, index=comb_index)
-        excel_table3 = pandas.DataFrame(foundment_values,
+        excel_table2 = pandas.DataFrame(self.all_of_it, columns=self.mutations_list + suppinfo, index=self.comb_index)
+        excel_table3 = pandas.DataFrame(self.foundment_values,
                                         columns=self.mutations_list + ["Average", "Standard deviation"],
                                         index=self.mutant_list)
-        writer2 = pandas.ExcelWriter(self.your_data2)
+        writer2 = pandas.ExcelWriter(outfile)
         excel_table2.to_excel(writer2, sheet_name="Theoretical results table", index=True)
         excel_table3.to_excel(writer2, sheet_name="Experimental results table", index=True)
         writer2.close()
         # and here are the lines to write the final excel table ! THe final file has two sheet, one with all the values and combinations, and the other with the experimental values only and the single mutants.
 
-    ##### Other methods
     def create_combination(self):
         """
         this function creates the mutant combinations based on the number you indicated in mutation_number
@@ -250,7 +302,7 @@ class Epistatic():
             i = i + 1
         return final_table1
 
-    def mean_and_sd_maker(self,data_array):
+    def mean_and_sd_maker(self):
         """
         this function will look into the vqlues of each mutants and make an average and standard deviation out of it.
         In the final table those are called "experimental average" and "experimental standard deviation
@@ -258,7 +310,7 @@ class Epistatic():
         """
         data_dic = {}
         mean_and_sd = []
-        for array in data_array:
+        for array in self.data_array:
             data = array[self.mutation_number:]
             data_float = numpy.array(data).astype(numpy.float64)
             mutant = str(array[:self.mutation_number])
@@ -269,13 +321,16 @@ class Epistatic():
             mean_and_sd.append(elt)
         return data_dic, mean_and_sd
 
-    def origin_finder(self,foundment_values):
+    def origin_finder(self):
         """
         this is the first function that will permit to find possible combinations between mutqnts.
         This one is useful to find double mutqnts. For exqmple [+ - + -] and [- + - +].
         :param foundment_values:
         :return:
         """
+        # I don't know why but this method alters foundment_values, which may not be intended? MF
+        foundment_values=self.foundment_values
+
         additivity_list = []
         foundment_values[
             foundment_values == "+"] = 1  # here I change the + and - for 1 and 0. This is useful for calculations
@@ -296,7 +351,7 @@ class Epistatic():
             i = i + 1
         return additivity_list
 
-    def please_more_combinations(self,origins, foundment_values):
+    def please_more_combinations(self,origins):
         """
         now is probably the trickiest function I had to do. The code above works for double mutants but not for triple, quadruple etc...
         The idea is that I use recurcivity to obtain new combinations
@@ -310,12 +365,12 @@ class Epistatic():
         comb_comparator = []
         if cycle_number > 1:  # that is the recursivity condition. The function will stop after the number of cycles is down to one
             for comb in final_comb_list:  # so the idea is to scan the comb list we obtained above. In that case we can make combinations of combinations to obtain more combinations !
-                for array2 in foundment_values[1:]:
+                for array2 in self.foundment_values[1:]:
                     res2 = numpy.array(comb[0] + array2)
-                    for array3 in foundment_values:
+                    for array3 in self.foundment_values:
                         if numpy.array_equal(res2, array3) == True:  # same principle as above
                             new_comb = list(comb[1])
-                            new_comb.append(foundment_values.tolist().index(array2.tolist()) + 1)
+                            new_comb.append(self.foundment_values.tolist().index(array2.tolist()) + 1)
                             count = 0
                             for elt in final_comb_list:
                                 a_comb = list(elt[1])
@@ -387,7 +442,7 @@ class Epistatic():
                             value = value - avgWT
                             new_target.append(value)
                         replicate_values = numpy.add(replicate_values, new_target)
-                        print(replicate_values)
+                        #print(replicate_values)
                     good_one = list(theor_mean)[0]
                     good_one = avgWT + good_one
                     theor_sd = (numpy.std(replicate_values)) / math.sqrt(self.replicate_number)
@@ -514,6 +569,7 @@ class Epistatic():
         return what_epi
 
     ############# Alt input
+
     @classmethod
     def user_input(cls):
         """
@@ -530,7 +586,7 @@ class Epistatic():
         replicate_number = int(input(
             "Please indicate your replicate number (if some replicates are faulty, please fill the table with the average of the others otherwise the program might give unexpected results) : "))
         your_data = input("Please enter the name of your replicate table (don't forget the file extension !): ")
-        your_data2 = input(
+        outfile = input(
             "Please enter the name of the file you want your results in (don't forget the file extension !): ")
         # very important lines that determine a lot the output of the code. This gives flexibility to the code and intercations with the user.
         for elt3 in range(1, replicate_number + 1):
@@ -538,18 +594,20 @@ class Epistatic():
         for elt2 in range(1, mutation_number + 1):
             mutations_list.append(input("Please indicate the mutation n°%s: " % (elt2)))
         #call class to make instance
-        return cls(your_study, mutation_number,replicate_number,your_data,your_data2,replicate_list,mutations_list)
+        return cls(your_study, mutation_number,replicate_number,your_data,outfile,replicate_list,mutations_list)
 
 
 
 if __name__ == "__main__":
-    # your_study, mutation_number, replicate_number, your_data, your_data2, replicate_list, mutations_list)
+    Epistatic.from_file('C','raw.xlsx').calculate().save('wow.xlsx')
+    exit()
+    # your_study, mutation_number, replicate_number, your_data, outfile, replicate_list, mutations_list)
     parser = argparse.ArgumentParser(description=__description__)
     parser.add_argument("your_study", help="Do you use selectivity or conversion values? Please answer with S (Selectivity) or C (Conversion)")
     parser.add_argument("mutation_number",type=int, help="Please indicate your mutation number:")
     parser.add_argument("replicate_number",type=int, help="Please indicate your replicate number (if some replicates are faulty, please fill the table with the average of the others otherwise the program might give unexpected results)")
     parser.add_argument("your_data", help="Please enter the name of your replicate table (don't forget the file extension !): (Put the name of the excel file you want your first table to be in)")
-    parser.add_argument("your_data2", help="Please enter the name of the file you want your results in (don't forget the file extension !): (same here but for the excel you want your results in)")
+    parser.add_argument("outfile", help="Please enter the name of the file you want your results in (don't forget the file extension !): (same here but for the excel you want your results in)")
     parser.add_argument('--version', action='version', version=__version__)
     args = parser.parse_args()
     Epistatic(**vars(args),replicate_list=[i+1 for i in range(args.replicate_number)],mutations_list=['M{}'.format(i+1) for i in range(args.mutation_number)])
