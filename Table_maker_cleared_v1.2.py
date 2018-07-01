@@ -14,7 +14,8 @@ __author__ = 'Paul. Classified by MF'
 __version__ = '1.1'
 __date__ = 'Mon Apr 16 21:04:56 2018'
 
-import argparse, math, random, numpy, pandas
+import argparse, math, random, pandas
+import numpy as np
 
 ##### METHODS #######
 
@@ -70,7 +71,7 @@ class Epistatic():
         Mutant_number = len(
             self.create_combination())  # the number of mutants if equal to the number of combinations
         box = ["X"] * Mutant_number * (self.mutation_number + self.replicate_number)  # here we make a number of empty cases filled with "X"proportional to the number of mutants and mutations
-        final_table1 = numpy.reshape(box, (Mutant_number, (self.mutation_number + self.replicate_number)))
+        final_table1 = np.reshape(box, (Mutant_number, (self.mutation_number + self.replicate_number)))
         # here we make a matrix with the boxes above with the number of rows being equal to the number of mutants and the number of column being equal to the number of mutations + the number of replicates
 
         value_list = [[mutant[combinations] for combinations in mutant] for mutant in self.create_combination()]
@@ -139,6 +140,15 @@ class Epistatic():
             replicate_list = ["Replicate n°%s" % (elt3) for elt3 in range(1, replicate_number + 1)]
         if not mutant_list:
             mutant_list = ["Mutant %s" % (elt4) for elt4 in range(1, 2 ** mutation_number + 1)]
+        #not a loop because of copy.
+        if isinstance(foundment_values,list):
+            foundment_values = np.array(foundment_values)
+        if isinstance(replicate_matrix,list):
+            replicate_matrix = np.array(replicate_matrix)
+        if isinstance(data_array,list):  # technically this should be generated... TODO
+            data_array = np.array(data_array)
+
+
         ## Save
         local = locals()
         for variable in ('your_study',
@@ -168,8 +178,8 @@ class Epistatic():
         # This function gives a tuple (dictionary of mutants associated with mean and std, array of mean and std)
         self.mean_and_sd_dic = self.mean_and_sd_maker()[0]  # here we just take the first element of the tuple, which is the dictionarry. I frankly don't even remember why I did a tuple and not just the dictionary but hey)
         # line with Mutant_number
-        # self.mean_and_sd_array = numpy.reshape(self.mean_and_sd_maker(data_array)[1], ((Mutant_number), 2))
-        self.mean_and_sd_array = numpy.reshape(self.mean_and_sd_maker()[1], (len(self.create_combination()), 2))
+        # self.mean_and_sd_array = np.reshape(self.mean_and_sd_maker(data_array)[1], ((Mutant_number), 2))
+        self.mean_and_sd_array = np.reshape(self.mean_and_sd_maker()[1], (len(self.create_combination()), 2))
         origins = self.origin_finder()
 
         all_combinations = self.please_more_combinations(origins)
@@ -192,25 +202,24 @@ class Epistatic():
         self.combs_only = [elt[1] for elt in ordered_combs]
 
         # this gives a list of the mutant combinations only
-
         signs_only = []
         for elt in ordered_combs:
             signs_only.append(elt[0])
         # same as above but for the signs only
-
-        reshaped_signs = numpy.reshape(signs_only, ((len(signs_only), (len(self.mutations_list)))))
-        reshaped_combs = numpy.reshape(self.combs_only, ((len(signs_only), 1)))
+        reshaped_signs = np.reshape(signs_only, ((len(signs_only), (len(self.mutations_list)))))
+        reshaped_combs = np.reshape(self.combs_only, ((len(signs_only), 1)))
         # reshqping everything to have a god format for the final table
 
         #so a method (the origin one) was altering foundament and here is reverted. I made a copy of it as it was a fishy piece of code,
         # so no reconversion needed.
-        self.final_comb_table = numpy.c_[reshaped_signs, reshaped_combs]
+        self.final_comb_table = np.c_[reshaped_signs, reshaped_combs]
         self.final_comb_table[self.final_comb_table == 1] = "+"
         self.final_comb_table[self.final_comb_table == 0] = "-"
-        self.foundment_values[self.foundment_values == 1] = "+"
-        self.foundment_values[self.foundment_values == 0] = "-"  # reconverting all 1 and 0 into + and -
-        self.foundment_values = numpy.c_[
-            self.foundment_values, self.mean_and_sd_array]  # we also add the averages and standard deviation (experimental) to the sign matrix
+        temp=np.zeros(self.foundment_values.shape,dtype=str)  #purity of dtype
+        temp[self.foundment_values == 1] = "+"
+        temp[self.foundment_values == 0] = "-"  # reconverting all 1 and 0 into + and -
+        self.foundment_values = np.c_[
+            temp, self.mean_and_sd_array]  # we also add the averages and standard deviation (experimental) to the sign matrix
 
         # this time for conversion, which is a little different albeit very close.
 
@@ -224,7 +233,7 @@ class Epistatic():
             epistasis = self.what_epistasis_sign_conversion(all_of_it)
         elif self.your_study == "S":
             epistasis = self.what_epistasis_sign_selectivity(all_of_it)
-        self.all_of_it = numpy.c_[all_of_it, epistasis]
+        self.all_of_it = np.c_[all_of_it, epistasis]
         # this all_of_it value is all the data we need, across the program we complete it as it goes
         return self
 
@@ -324,10 +333,10 @@ class Epistatic():
         mean_and_sd = []
         for array in self.data_array:
             data = array[self.mutation_number:]
-            data_float = numpy.array(data).astype(numpy.float64)
+            data_float = np.array(data).astype(np.float64)
             mutant = str(array[:self.mutation_number])
-            average = float(numpy.average(data_float))
-            std = float(numpy.std(data_float)) / math.sqrt(self.replicate_number)
+            average = float(np.average(data_float))
+            std = float(np.std(data_float)) / math.sqrt(self.replicate_number)
             data_dic[mutant] = [average, std]
         for elt in data_dic.values():
             mean_and_sd.append(elt)
@@ -341,21 +350,23 @@ class Epistatic():
         :return:
         """
         # I don't know why but this method alters foundment_values, which may not be intended? MF
+        # actually this makes a shallow copy... so  shmeh
         foundment_values=self.foundment_values
 
         additivity_list = []
-        foundment_values[
-            foundment_values == "+"] = 1  # here I change the + and - for 1 and 0. This is useful for calculations
-        foundment_values[foundment_values == "-"] = 0
+        if np.any(foundment_values == '+'):
+            foundment_values[
+                foundment_values == "+"] = 1  # here I change the + and - for 1 and 0. This is useful for calculations
+            foundment_values[foundment_values == "-"] = 0
         i = 1
         while i < len(foundment_values) - 1:  # I go through the sign mqtrix
             j = i
             while j < len(
                     foundment_values) - 1:  # and a second time, so I cqn isolqte two combinqtions qt q time qnd compare them
-                res = foundment_values[i] + foundment_values[
-                    j + 1]  # so here we hqve this vqriqble "res". For example if the two combinations are [+ - +] and [- + -], res will be [1,1,1]. However, if the combinations are [+ + -] and [+ - +], res will be [2, 1, 1]
+                res = foundment_values[i] + foundment_values[j + 1]
+                # so here we hqve this vqriqble "res". For example if the two combinations are [+ - +] and [- + -], res will be [1,1,1]. However, if the combinations are [+ + -] and [+ - +], res will be [2, 1, 1]
                 for array in foundment_values:  # we tqke this res and compare it to the mutants we have
-                    if numpy.array_equal(res,
+                    if np.array_equal(res,
                                          array) == True:  # if res is equal to one of the mutant, we have found a combination !
                         additivity_list.append((list(res), (i + 1,
                                                             j + 2)))  # here we write the combination in a tuple with the combination and what mutants form it
@@ -378,9 +389,9 @@ class Epistatic():
         if cycle_number > 1:  # that is the recursivity condition. The function will stop after the number of cycles is down to one
             for comb in final_comb_list:  # so the idea is to scan the comb list we obtained above. In that case we can make combinations of combinations to obtain more combinations !
                 for array2 in self.foundment_values[1:]:
-                    res2 = numpy.array(comb[0] + array2)
+                    res2 = np.array(comb[0] + array2)
                     for array3 in self.foundment_values:
-                        if numpy.array_equal(res2, array3) == True:  # same principle as above
+                        if np.array_equal(res2, array3) == True:  # same principle as above
                             new_comb = list(comb[1])
                             new_comb.append(self.foundment_values.tolist().index(array2.tolist()) + 1)
                             count = 0
@@ -410,26 +421,26 @@ class Epistatic():
         for elt in self.final_comb_table:
             for elt2 in self.mean_and_sd_dic.keys():
                 if str(elt[:self.mutation_number]) == str(elt2):
-                    elt = numpy.append(elt, list(self.mean_and_sd_dic[elt2]))
+                    elt = np.append(elt, list(self.mean_and_sd_dic[elt2]))
             for elt3 in self.combs_only:
-                if numpy.array_equal(elt[len(self.mutations_list)], elt3) == True:
-                    theor_mean = numpy.array([0])
-                    replicate_values = numpy.zeros((1, len(self.replicate_matrix[0])))
+                if np.array_equal(elt[len(self.mutations_list)], elt3) == True:
+                    theor_mean = np.array([0])
+                    replicate_values = np.zeros((1, len(self.replicate_matrix[0])))
                     for elt4 in elt3:
                         target = self.mean_and_sd_array[elt4 - 1][0]
-                        theor_mean = numpy.add(theor_mean, target)
+                        theor_mean = np.add(theor_mean, target)
                         target2 = self.replicate_matrix[elt4 - 1]
-                        replicate_values = numpy.add(replicate_values, target2)
-                    theor_sd = (numpy.std(replicate_values)) / math.sqrt(self.replicate_number)
-                    elt = numpy.append(elt, list(theor_mean))
-                    elt = numpy.append(elt, theor_sd)
+                        replicate_values = np.add(replicate_values, target2)
+                    theor_sd = (np.std(replicate_values)) / math.sqrt(self.replicate_number)
+                    elt = np.append(elt, list(theor_mean))
+                    elt = np.append(elt, theor_sd)
                     grand_final.append(elt)
         for elt5 in grand_final:
             at_last = (elt5[len(self.mutations_list) + 1:][0]) - (elt5[len(self.mutations_list) + 1:][2])
-            elt5 = numpy.append(elt5, at_last)
+            elt5 = np.append(elt5, at_last)
             all_of_it.append(elt5)
 
-        return numpy.array(all_of_it)
+        return np.array(all_of_it)
 
     def theoretical_stats_conversion(self):
         grand_final = []
@@ -439,34 +450,38 @@ class Epistatic():
         avgWT = self.mean_and_sd_dic[WT][0]
         for elt in self.final_comb_table:
             for elt2 in self.mean_and_sd_dic.keys():
-                if str(elt[:self.mutation_number]) == str(elt2):
-                    elt = numpy.append(elt, list(self.mean_and_sd_dic[elt2]))
+                print(str(elt[:self.mutation_number]).replace("'","").replace(" ",""),str(elt2).replace('0.','-').replace('1.','+').replace("'","").replace("'","").replace(" ",""))
+                if str(elt[:self.mutation_number]).replace("'","").replace("'","").replace(" ","") == str(elt2).replace('0.','-').replace('1.','+').replace("'","").replace("'","").replace(" ",""):
+                    elt = np.append(elt, list(self.mean_and_sd_dic[elt2]))
+                    print('MATCH')
             for elt3 in self.combs_only:
-                if numpy.array_equal(elt[len(self.mutations_list)], elt3) == True:
-                    theor_mean = numpy.array([0])
-                    replicate_values = numpy.zeros((1, len(self.replicate_matrix[0])))
+                if np.array_equal(elt[len(self.mutations_list)], elt3) == True:
+                    theor_mean = np.array([0])
+                    replicate_values = np.zeros((1, len(self.replicate_matrix[0])))
                     for elt4 in elt3:
                         new_target = []
                         target = self.mean_and_sd_array[elt4 - 1][0] - avgWT
-                        theor_mean = numpy.add(theor_mean, target)
+                        theor_mean = np.add(theor_mean, target)
                         target2 = self.replicate_matrix[elt4 - 1]
                         for value in target2:
                             value = value - avgWT
                             new_target.append(value)
-                        replicate_values = numpy.add(replicate_values, new_target)
+                        replicate_values = np.add(replicate_values, new_target)
                         #print(replicate_values)
                     good_one = list(theor_mean)[0]
                     good_one = avgWT + good_one
-                    theor_sd = (numpy.std(replicate_values)) / math.sqrt(self.replicate_number)
-                    elt = numpy.append(elt, good_one)
-                    elt = numpy.append(elt, theor_sd)
+                    theor_sd = (np.std(replicate_values)) / math.sqrt(self.replicate_number)
+                    elt = np.append(elt, good_one)
+                    elt = np.append(elt, theor_sd)
                     grand_final.append(elt)
+        print('mutationlist',self.mutations_list)
+        print('grand_final',grand_final)
         for elt5 in grand_final:
             at_last = (elt5[len(self.mutations_list) + 1:][0]) - (elt5[len(self.mutations_list) + 1:][2])
-            elt5 = numpy.append(elt5, at_last)
+            elt5 = np.append(elt5, at_last)
             all_of_it.append(elt5)
 
-        return numpy.array(all_of_it)
+        return np.array(all_of_it)
 
     def what_epistasis_sign_selectivity(self,all_of_it):
         sign = []
@@ -498,7 +513,7 @@ class Epistatic():
                     double_mutant_avg = lign[len(self.mutations_list) + 1]
             for elt3 in elt2:
                 mutant_avg = self.replicate_matrix[elt3 - 1]
-                mutant_avg = float(numpy.average(mutant_avg))
+                mutant_avg = float(np.average(mutant_avg))
                 combavg.append(mutant_avg)
             count = 0
             for avg in combavg:
@@ -556,7 +571,7 @@ class Epistatic():
                     double_mutant_avg = lign[len(self.mutations_list) + 1]
             for elt3 in elt2:
                 mutant_avg = self.replicate_matrix[elt3 - 1] - avgWT
-                mutant_avg = float(numpy.average(mutant_avg))
+                mutant_avg = float(np.average(mutant_avg))
                 combavg.append(mutant_avg)
             count = 0
             for avg in combavg:

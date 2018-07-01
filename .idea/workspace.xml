@@ -2,7 +2,8 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="3c7267f3-bfe1-42fb-aa6a-f501ca68f4df" name="Default" comment="">
-      <change beforePath="$PROJECT_DIR$/Table_maker_cleared_v1.1.py" beforeDir="false" afterPath="$PROJECT_DIR$/Table_maker_cleared_v1.2.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Table_maker_cleared_v1.2.py" beforeDir="false" afterPath="$PROJECT_DIR$/Table_maker_cleared_v1.2.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="TRACKING_ENABLED" value="true" />
@@ -16,8 +17,11 @@
       <file leaf-file-name="Table_maker_cleared_v1.2.py" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/Table_maker_cleared_v1.2.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="133">
-              <caret line="444" column="25" selection-start-line="444" selection-start-column="25" selection-end-line="444" selection-end-column="25" />
+            <state relative-caret-position="566">
+              <caret line="637" column="18" selection-start-line="637" selection-start-column="18" selection-end-line="637" selection-end-column="18" />
+              <folding>
+                <element signature="e#737#774#0" expanded="true" />
+              </folding>
             </state>
           </provider>
         </entry>
@@ -25,11 +29,8 @@
       <file leaf-file-name="Table_maker_cleared.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/Table_maker_cleared.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="211">
-              <caret line="135" column="10" selection-start-line="135" selection-start-column="4" selection-end-line="135" selection-end-column="10" />
-              <folding>
-                <element signature="e#110#123#0" expanded="true" />
-              </folding>
+            <state relative-caret-position="480">
+              <caret line="416" lean-forward="true" selection-start-line="415" selection-end-line="416" />
             </state>
           </provider>
         </entry>
@@ -68,6 +69,12 @@
       <find>create_combination</find>
       <find>Mutant</find>
       <find>Mutant_num</find>
+      <find>print</find>
+      <find>final_</find>
+      <find>calculate</find>
+      <find>save</find>
+      <find>save(</find>
+      <find>suppinfo</find>
     </findStrings>
     <replaceStrings>
       <replace>outfile</replace>
@@ -87,10 +94,10 @@
       </list>
     </option>
   </component>
-  <component name="ProjectFrameBounds" extendedState="6">
+  <component name="ProjectFrameBounds">
     <option name="y" value="23" />
     <option name="width" value="1440" />
-    <option name="height" value="810" />
+    <option name="height" value="800" />
   </component>
   <component name="ProjectInspectionProfilesVisibleTreeState">
     <entry key="Project Default">
@@ -116,7 +123,6 @@
       <foldersAlwaysOnTop value="true" />
     </navigator>
     <panes>
-      <pane id="Scope" />
       <pane id="ProjectPane">
         <subPane>
           <expand>
@@ -128,6 +134,7 @@
           <select />
         </subPane>
       </pane>
+      <pane id="Scope" />
     </panes>
   </component>
   <component name="PropertiesComponent">
@@ -193,19 +200,19 @@
     <servers />
   </component>
   <component name="ToolWindowManager">
-    <frame x="0" y="23" width="1440" height="810" extended-state="6" />
+    <frame x="0" y="23" width="1440" height="800" extended-state="6" />
     <editor active="true" />
     <layout>
-      <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.24947146" />
+      <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.24876674" />
       <window_info anchor="bottom" id="TODO" order="6" />
       <window_info anchor="bottom" id="Event Log" order="7" side_tool="true" />
+      <window_info anchor="bottom" id="Run" order="2" weight="0.32959327" />
       <window_info anchor="bottom" id="Version Control" order="7" />
       <window_info anchor="bottom" id="Python Console" order="7" />
-      <window_info active="true" anchor="bottom" id="Run" order="2" visible="true" weight="0.32959327" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
       <window_info anchor="bottom" id="Terminal" order="7" />
-      <window_info id="Favorites" order="2" side_tool="true" />
       <window_info anchor="bottom" id="Debug" order="3" weight="0.4" />
+      <window_info id="Favorites" order="2" side_tool="true" />
       <window_info anchor="right" content_ui="combo" id="Hierarchy" order="2" weight="0.25" />
       <window_info anchor="right" id="Commander" order="0" weight="0.4" />
       <window_info anchor="right" id="Ant Build" order="1" weight="0.25" />
@@ -225,6 +232,65 @@
   <component name="editorHistoryManager">
     <entry file="file://$PROJECT_DIR$/Table_maker_cleared_v1.2.py">
       <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="9255">
+          <caret line="617" column="25" selection-start-line="617" selection-start-column="25" selection-end-line="617" selection-end-column="41" />
+          <folding>
+            <element signature="e#737#774#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/Table_maker_cleared_v1.2.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="9255">
+          <caret line="617" column="25" selection-start-line="617" selection-start-column="25" selection-end-line="617" selection-end-column="41" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/Table_maker_cleared_v1.2.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="9255">
+          <caret line="617" column="25" selection-start-line="617" selection-start-column="25" selection-end-line="617" selection-end-column="41" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/Table_maker_cleared_v1.2.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="9255">
+          <caret line="617" column="25" selection-start-line="617" selection-start-column="25" selection-end-line="617" selection-end-column="41" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/Table_maker_cleared_v1.2.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="9165">
+          <caret line="611" lean-forward="true" selection-start-line="611" selection-end-line="611" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/Table_maker_cleared.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="840">
+          <caret line="60" selection-start-line="60" selection-end-line="60" selection-end-column="89" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/Table_maker_cleared_v1.2.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="9150">
+          <caret line="610" column="24" lean-forward="true" selection-start-line="610" selection-start-column="24" selection-end-line="610" selection-end-column="24" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/Table_maker_cleared.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="900">
+          <caret line="60" lean-forward="true" selection-start-line="60" selection-end-line="60" selection-end-column="89" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/Table_maker_cleared_v1.2.py">
+      <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="1170">
           <caret line="78" column="68" lean-forward="true" selection-start-line="78" selection-start-column="68" selection-end-line="78" selection-end-column="68" />
         </state>
@@ -234,9 +300,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="1155">
           <caret line="77" column="35" lean-forward="true" selection-start-line="77" selection-start-column="35" selection-end-line="77" selection-end-column="35" />
-          <folding>
-            <element signature="e#110#123#0" expanded="true" />
-          </folding>
         </state>
       </provider>
     </entry>
@@ -257,18 +320,18 @@
     <entry file="file://$PROJECT_DIR$/gender.py" />
     <entry file="file://$PROJECT_DIR$/Table_maker_cleared.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="211">
-          <caret line="135" column="10" selection-start-line="135" selection-start-column="4" selection-end-line="135" selection-end-column="10" />
-          <folding>
-            <element signature="e#110#123#0" expanded="true" />
-          </folding>
+        <state relative-caret-position="480">
+          <caret line="416" lean-forward="true" selection-start-line="415" selection-end-line="416" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/Table_maker_cleared_v1.2.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="133">
-          <caret line="444" column="25" selection-start-line="444" selection-start-column="25" selection-end-line="444" selection-end-column="25" />
+        <state relative-caret-position="566">
+          <caret line="637" column="18" selection-start-line="637" selection-start-column="18" selection-end-line="637" selection-end-column="18" />
+          <folding>
+            <element signature="e#737#774#0" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>
