@@ -16,7 +16,8 @@ else:
 
 # ======================================================================================================================
 setup_logging(configfile)
-app = get_app(configfile, 'main', options=os.environ) # pyramid.router.Router
+safe_environ = {k: v for k, v in os.environ.items() if '%' not in k+v}
+app = get_app(configfile, 'main', options=safe_environ) # pyramid.router.Router
 
 # ======================================================================================================================
 
