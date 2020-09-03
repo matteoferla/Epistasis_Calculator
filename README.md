@@ -1,11 +1,19 @@
 # Epistasis
 ## Description
 Script v1.0 written by Paul Lubrano. Slightly modified by myself (v1.1) and made app compatible (v1.2).
+Original file can be found in `epistasis/old_files`.
 
 * To run the webserver locally see run `python3 app.py`
 * To use as a module `from epistasis import Epistatic`
 * To run as a command line script, run `python3 epistasis_script.py` with appropriate arguments
 * To run the original script, in python call `Epistatic.user_input()` (don't)
+
+## Folders
+
+There are two folders:
+
+* `epistasis`, which contains the class `Epistatic`, which does the calculations
+* `epiapp`, which is the Pyramid web app
 
 ## module
 
@@ -31,6 +39,10 @@ Alternatively use:
 
 * `Epistatic.from_files`
 * `Epistatic.from_pandas`
+              
+## web app
+
+To run the web app locally run `python3 app.py`.
               
 ## epistasis_script.py
 
