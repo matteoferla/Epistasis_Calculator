@@ -59,7 +59,7 @@
             </button>
             <div class="collapse navbar-collapse" id="navbarNavDropdown">
                 <ul class="navbar-nav">
-                    <li class="nav-item"> <a class="nav-link" href="#" target="_blank"><i class="far fa-book"></i> Underlying paper</a>
+                    <li class="nav-item"> <a class="nav-link" href="https://www.biorxiv.org/content/10.1101/2020.04.14.041590v1" target="_blank" ><i class="far fa-book"></i> Underlying paper</a>
                     </li>
                     <li class="nav-item"> <a class="nav-link" href="#" id="mail"><i class="far fa-envelope"></i> Contact us</a>
                         <!--

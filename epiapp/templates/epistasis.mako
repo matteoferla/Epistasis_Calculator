@@ -9,10 +9,10 @@
 
     </h3>
     <div class="card-body" id="intro">
-        <p>Lorem Ipsum</p>
+        <p>Calculate the epistatic effect different mutations have on a structure.</p>
         <p>This site accepts two ways of inputting the data. The default is by generating
             and filling out a table online, the second is by generating and filling
-            out an excel sheet and uploading it.</p>
+            out an Excel spreadsheet and uploading it.</p>
     </div>
 </div>
 <br>

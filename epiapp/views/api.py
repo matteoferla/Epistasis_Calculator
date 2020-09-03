@@ -1,25 +1,27 @@
 from pyramid.view import view_config, view_defaults
 from epistasis import Epistatic
 from pyramid.response import FileResponse
-import os, traceback, uuid, shutil, logging
+import os, traceback, uuid, shutil, logging, time
 
 log = logging.getLogger(__name__)
 
 @view_defaults(route_name='api')
 class Epistaticizer:
+    temp_path = os.path.join('epiapp', 'temp')
 
     def __init__(self, request):
         self.request = request
         self.data = request.json_body
+        self.tick = time.time()
 
     @view_config(renderer='json')
     def api(self):
         try:
             if 'file' not in self.request.POST:  # JSON
-                data = self.epier_table()
+                data = self.via_table()
             else:  # FormData
-                data = self.epier_file()
-            filename = os.path.join('epiapp', 'temp', '{0}.{1}'.format(uuid.uuid4(), 'xlsx'))
+                data = self.via_file()
+            filename = os.path.join(self.temp_path, '{0}.{1}'.format(uuid.uuid4(), 'xlsx'))
             data.save(filename)
             self.request.session['epistasis'] = filename
             suppinfo = ["Combinations", "Experimental average", "Experimental standard deviation", "Theoretical average",
@@ -56,18 +58,20 @@ class Epistaticizer:
                                                                                'Graph of the powerset of combinations mutants with circle width correlated to intensity.')),
                 empnav=tabs.format(set='emp')
             )
-
+            # timed
+            tock = time.time()
+            log.info(f'Calculation complete in {self.tick - tock:.2f} seconds')
+            # done!
             return {'html': html, 'raw': raw}
         except Exception as err:
             log.warning(str(err))
             log.debug(traceback.format_exc())
             return {'html': 'ERROR: ' + str(err)}
 
-    def epier_table(self):
+    def via_table(self):
         return Epistatic(**self.data).calculate()
 
-
-    def epier_file(self):
+    def via_file(self):
         new_filename = self.save_file()
         r = Epistatic.from_file(self.request.POST['your_study'], new_filename).calculate()
         if os.path.exists(new_filename):
@@ -79,7 +83,7 @@ class Epistaticizer:
         Saves the file without doing anything to it.
         """
 
-        filename = os.path.join('epiapp', 'temp', '{0}.{1}'.format(uuid.uuid4(), extension))
+        filename = os.path.join(self.temp_path, '{0}.{1}'.format(uuid.uuid4(), extension))
         with open(filename, 'wb') as output_file:
             if isinstance(self.request.params[field], str):  ###API user made a mess.
                 log.warning(f'user uploaded a str not a file!')
@@ -102,7 +106,7 @@ class Epistaticizer:
 
     @view_config(route_name='create')
     def create(self):
-        file = os.path.join('extras_site', 'tmp', '{0}.{1}'.format(uuid.uuid4(), '.xlsx'))
+        file = os.path.join(self.temp_path, '{0}.{1}'.format(uuid.uuid4(), 'xlsx'))
         Epistatic.create_input_scheme(your_study='C', mutation_number=self.request.params['mutation_number'],
                                       replicate_number=self.request.params['replicate_number'], outfile=file)
         response = FileResponse(
@@ -110,4 +114,5 @@ class Epistaticizer:
             request=self.request,
             content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
         )
+        log.info('Serving created sheet')
         return response
