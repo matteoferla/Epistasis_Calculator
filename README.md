@@ -70,3 +70,11 @@ It need to be run twice, no install.
                            forget the file extension !): (Put the name of the
                            excel file you want your first table to be in)
       --version            show program's version number and exit
+      
+      
+## To Do
+
+* There are a few todos in the code.
+* `/Users/matteo/Coding/Epistasis_Calculator/epistasis/__init__.py:221`: FutureWarning: elementwise comparison failed; returning scalar instead, but in the future will perform elementwise comparison
+  if np.any(foundment_values == '+'):
+* saving a uuid named file can be avoided by using streams
