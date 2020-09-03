@@ -314,13 +314,15 @@ class Epistatic(_EA, _EB):
         avgWT = self.mean_and_sd_dic[WT][0]
         for elt in self.final_comb_table:
             for elt2 in self.mean_and_sd_dic.keys():
-                print(str(elt[:self.mutation_number]).replace("'", "").replace(" ", ""),
-                      str(elt2).replace('0.', '-').replace('1.', '+').replace("'", "").replace("'", "").replace(" ",
-                                                                                                                ""))
+                if self.verbose:
+                    print(str(elt[:self.mutation_number]).replace("'", "").replace(" ", ""),
+                          str(elt2).replace('0.', '-').replace('1.', '+').replace("'", "").replace("'", "").replace(" ",
+                                                                                                                    ""))
                 if str(elt[:self.mutation_number]).replace("'", "").replace("'", "").replace(" ", "") == str(
                         elt2).replace('0.', '-').replace('1.', '+').replace("'", "").replace("'", "").replace(" ", ""):
                     elt = np.append(elt, list(self.mean_and_sd_dic[elt2]))
-                    print('MATCH')
+                    if self.verbose:
+                        print('MATCH')
             for elt3 in self.combs_only:
                 if np.array_equal(elt[len(self.mutations_list)], elt3) == True:
                     theor_mean = np.array([0])
@@ -341,8 +343,9 @@ class Epistatic(_EA, _EB):
                     elt = np.append(elt, good_one)
                     elt = np.append(elt, theor_sd)
                     grand_final.append(elt)
-        print('mutationlist', self.mutations_list)
-        print('grand_final', grand_final)
+        if self.verbose:
+            print('mutationlist', self.mutations_list)
+            print('grand_final', grand_final)
         for elt5 in grand_final:
             at_last = (elt5[len(self.mutations_list) + 1:][0]) - (elt5[len(self.mutations_list) + 1:][2])
             elt5 = np.append(elt5, at_last)

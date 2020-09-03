@@ -39,6 +39,8 @@ Alternatively use:
 
 * `Epistatic.from_files`
 * `Epistatic.from_pandas`
+
+To get some information during the run for debug purposes, set `Epistatic.verbose` to True.
               
 ## web app
 

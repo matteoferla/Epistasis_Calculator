@@ -1,6 +1,8 @@
 import numpy as np
 
 class EpiBaseMixin:
+    verbose = False
+
     def __init__(self, your_study, mutation_number, replicate_number, replicate_list=None, mutations_list=None,
                  mutant_list=None, foundment_values=None, data_array=None, replicate_matrix=None):
         """
