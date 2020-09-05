@@ -1,3 +1,4 @@
+//window.demoData is filled in epistasis.mako
 //<%text>
 
 // Let's mod string python-style alla StackOverflow (.formatUnicorn)
@@ -518,26 +519,43 @@ $(document).ready(function() {
         }
     });
 
-    $('#demo_table').click(function() {
-        $('#mutation_number2').val(3);
-        $('#replicate_number2').val(3);
+    $('#demoData button').click(event => {
+        const button = $(event.target);
+        //const data = JSON.parse(button.data('values'));
+        const data = button.data('values');
+        // determine rows!
+        const firstK = Object.keys(data)[0];
+        $('#mutation_number2').val(firstK.length);
+        $('#replicate_number2').val(data[firstK].length);
         update_mut_names_div();
-        demo = [
-            [40.408327, 37.176372, 35.776619],
-            [43.913044,	47.390555,	42.959925],
-            [34.551186,	34.033348,	30.844536],
-            [37.383186,	35.019421,	42.932996],
-            [31.102138,	28.735591,	29.401488],
-            [29.78191,	24.641165,	25.13452],
-            [79.956978,	84.28502,	74.090488],
-            [76.937329,	69.938071,	58.361839]
-        ];
-        for (var m = 0; m < 8; m++) {
-            for (var r = 0; r < 3; r++) {
-                $(`#M${m}R${r}`).val(demo[m][r]);
-            }
-        }
+        $('#dataTableModal').modal('hide');
+        // fill values!
+        Object.keys(data).forEach(k => {const signed = k.replace(/\-/g, '0').replace(/\+/g, '1');
+                                    const row = $(`[data-combo="${signed}"]`);
+                                    row.find('input').each((i, el) => $(el).val(data[k][i]));
+                                    });
     });
+
+    // $('#demoData button').click(function() {
+    //     $('#mutation_number2').val(3);
+    //     $('#replicate_number2').val(3);
+    //     update_mut_names_div();
+    //     demo = [
+    //         [40.408327, 37.176372, 35.776619],
+    //         [43.913044,	47.390555,	42.959925],
+    //         [34.551186,	34.033348,	30.844536],
+    //         [37.383186,	35.019421,	42.932996],
+    //         [31.102138,	28.735591,	29.401488],
+    //         [29.78191,	24.641165,	25.13452],
+    //         [79.956978,	84.28502,	74.090488],
+    //         [76.937329,	69.938071,	58.361839]
+    //     ];
+    //     for (var m = 0; m < 8; m++) {
+    //         for (var r = 0; r < 3; r++) {
+    //             $(`#M${m}R${r}`).val(demo[m][r]);
+    //         }
+    //     }
+    // });
 
 
 

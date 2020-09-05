@@ -2,17 +2,26 @@ from pyramid.view import view_config, view_defaults
 from epistasis import Epistatic
 from pyramid.response import FileResponse
 import os, traceback, uuid, shutil, logging, time
+import pandas as pd
+import re, json
+from typing import List, Dict
 
 log = logging.getLogger(__name__)
 
 @view_defaults(route_name='api')
 class Epistaticizer:
     temp_path = os.path.join('epiapp', 'temp')
+    demo_data = {} # filled after declaration by `load_demo_data`
 
     def __init__(self, request):
         self.request = request
-        self.data = request.json_body
+        self.data = request.json_body if request.body else {}
         self.tick = time.time()
+
+    @view_config(route_name='home', renderer='../templates/epistasis.mako')
+    def main(self):  # serving static basically.
+        log.info('Serving main page')
+        return {'demo_data': {k: json.dumps(v).replace('NaN', 'null') for k, v in self.demo_data.items()}}
 
     @view_config(renderer='json')
     def api(self):
@@ -50,7 +59,7 @@ class Epistaticizer:
             tabcont = '<div class="tab-content"><div class="tab-pane fade show active" id="{set}-table" role="tabpanel">{table}</div><div class="tab-pane fade" id="{set}-graph" role="tabpanel">{graph}</div></div>'
             graph = '<div id="{0}-graph-plot"><p>{1}</p><button type="button" class="btn btn-success" id="{0}-down"><i class="fa fa-download" style="margin-left:20px;"></i>Download</button></div>'
             html = '{down}<br/><h3>Theoretical</h3>{theonav}{theotab}<h3>Empirical</h3>{empnav}{emptab}'.format(
-                down='<a class="btn btn-primary" href="/download_epistasis" download="epistasis_results.xlsx">Download</a>',
+                down='<a class="btn btn-primary" href="/download" download="epistasis_results.xlsx">Download</a>',
                 theotab=tabcont.format(set='theo', table=theo, graph=graph.format('theo',
                                                                                   'Plot of the combinations of mutations. Note that the circles can be dragged, which is useful when the lines criss-cross under a circle.')),
                 theonav=tabs.format(set='theo'),
@@ -60,7 +69,7 @@ class Epistaticizer:
             )
             # timed
             tock = time.time()
-            log.info(f'Calculation complete in {self.tick - tock:.2f} seconds')
+            log.info(f'Calculation complete in {tock - self.tick:.3f} seconds')
             # done!
             return {'html': html, 'raw': raw}
         except Exception as err:
@@ -101,6 +110,7 @@ class Epistaticizer:
             request=self.request,
             content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
         )
+        log.info('Serving created filled sheet')
         return response
 
 
@@ -114,5 +124,69 @@ class Epistaticizer:
             request=self.request,
             content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
         )
-        log.info('Serving created sheet')
+        log.info('Serving created blank sheet')
         return response
+
+    @view_config(route_name='demo')
+    def demo(self):
+        if 'dataset' not in self.data:
+            return {'status': 'error', 'data': None}
+        else:
+            pass
+
+    @classmethod
+    def load_demo_data(cls) -> None:
+        """
+        Load the xlxs as a dict of dict of key +-+ (foundment) and value list of values.
+        xlxs read from Demo folder.
+        This method
+
+        Returns: None
+
+        """
+        cls.demo_data = {}
+        # os.getcwd() is not necessarily repo root...
+        viewfolder = os.path.split(__file__)[0]
+        epiappfolder = os.path.split(viewfolder)[0]
+        reporoot = os.path.split(epiappfolder)[0]
+        demofolder = os.path.join(reporoot, 'demo')
+        for filename in os.listdir(demofolder):
+            name, extension = os.path.splitext(filename)
+            if extension == '.xlsx':
+                try:
+                    cls.demo_data[name] = cls.parse_demo(os.path.join(demofolder, filename))
+                    log.info(f'Demo dataset {filename} loaded')
+                except Exception as error:
+                    log.error(f'Demo dataset {filename} failed to load. {error.__class__.__name__}: {error}')
+
+    @classmethod
+    def parse_demo(cls, filepath) -> Dict[str, List[float]]:
+        """
+        called by ``load_demo_data`` to do the actual reading
+        Args:
+            filepath:
+
+        Returns:
+
+        """
+        df = pd.read_excel(filepath)
+        dexes = list(df.transpose().to_dict().values())
+
+        def extract_signname(dex):
+            x = {int(re.match('M(\d+)', k).group(1)): v for k, v in dex.items() if re.match('M\d+', k)}
+            return ''.join(
+                [x[i] for i in range(1, max(x.keys()) + 1)])  # will rightfully crash if there is a missing value
+
+        def extract_replicatenumber(dex):
+            x = {int(re.match('Replicate n°(\d+)', k).group(1)): v for k, v in dex.items() if
+                 re.match('Replicate n°\d+', k)}
+            return [x[i] for i in range(1, max(x.keys()) + 1)]  # will rightfully crash if there is a missing value
+
+        signnames = [extract_signname(dex) for dex in dexes]
+        replicatenumbers = [extract_replicatenumber(dex) for dex in dexes]
+
+        return dict(zip(signnames, replicatenumbers))
+
+# ===== Load data!
+Epistaticizer.load_demo_data()
+

@@ -34,11 +34,49 @@ Please see the docstrings in the methods for more info.
               replicate_matrix=None)\
           .calculate()\
           .save('out.xls')
-          
-Alternatively use:
 
-* `Epistatic.from_files`
-* `Epistatic.from_pandas`
+The original functionality of the script is retained as the class method `user_input` which will ask for input.
+The altered usage has a way of creating the scheme thusly:
+    
+    Epistatic.create_input_scheme('C', '3', '3', 'test.xlsx')
+    
+Running from file and calculating and saving:
+
+    Epistatic.from_file('C', 'raw.xlsx').calculate().save('wow.xlsx')
+
+Running from panda table:
+
+    Epistatic.from_pandas('C',table)
+    
+Running from values:
+
+            Epistatic(your_study, mutation_number,replicate_number,replicate_list,mutations_list, mutant_list,foundment_values,data_array,replicate_matrix)
+
+The attributes are:
+
+* your_study: Do you use selectivity or conversion values? Please answer with S (Selectivity) or C (Conversion):
+* mutation_number: Please indicate your mutation number:
+* replicate_number: Please indicate your replicate number (if some replicates are faulty, please fill the table with the average of the others otherwise the program might give unexpected results) :
+* replicate_list (optinal): Replicate n°%s
+* mutations_list (optinal): Please indicate the mutation n°%s:
+* mutant_list (optinal):
+* foundment_values (optinal):  The +/- np array
+* data_array (optinal):        All the np array
+* replicate_matrix (optinal):  The number part of the np array
+
+Methods:
+
+* create_combination
+* mean_and_sd_maker
+* origin_finder
+* please_more_combinations
+* table_filler
+* theoretical_stats_conversion
+* theoretical_stats_selectivity
+* value_list_sorter
+* what_epistasis_sign_conversion
+* what_epistasis_sign_selectivity
+
 
 To get some information during the run for debug purposes, set `Epistatic.verbose` to True.
               
@@ -57,23 +95,25 @@ It need to be run twice, no install.
                            [-d YOUR_DATA] [--version]
                            your_study outfile
 
-    I have added some comments here and there to help you understand the code. I
-    hope it will be alright, sorry for the mess ! CRUCIAL HOW TO RUN : 1) First
-    run the programm until the line with "checkpoint table 1" (around line 100) 3)
-    complete carefully what the programm asks, this will influence a lot what the
-    output is 2) you will get an excel in which you have the different mutants, in
-    this excel put the experimental replicates values instead of the "X" 3) then
-    run the rest of the program, you will get a second excel with the results !
-    MF. Modded so it uses argparse.
+I have added some comments here and there to help you understand the code. I
+hope it will be alright, sorry for the mess ! CRUCIAL HOW TO RUN : 1) First
+run the programm until the line with "checkpoint table 1" (around line 100) 3)
+complete carefully what the programm asks, this will influence a lot what the
+output is 2) you will get an excel in which you have the different mutants, in
+this excel put the experimental replicates values instead of the "X" 3) then
+run the rest of the program, you will get a second excel with the results !
+MF. Modded so it uses argparse.
     
-    positional arguments:
+positional arguments:
+
       your_study           Do you use selectivity or conversion values? Please
                            answer with S (Selectivity) or C (Conversion)
       outfile              Please enter the name of the file you want your results
                            in (don't forget the file extension !): (same here but
                            for the excel you want your results in)
     
-    optional arguments:
+optional arguments:
+
       -h, --help           show this help message and exit
       -m MUTATION_NUMBER   Please indicate your mutation number:
       -r REPLICATE_NUMBER  Please indicate your replicate number (if some

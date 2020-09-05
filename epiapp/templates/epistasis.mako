@@ -65,7 +65,9 @@
                 <br>
                 <div class="btn-group" role="group">
                     <button type="button" class="btn btn-secondary" id="clear_table">Clear</button>
-                    <button type="button" class="btn btn-primary" id="demo_table">Demo</button>
+                    <button type="button" class="btn btn-primary" id="demo_table"
+                            data-toggle="modal" data-target="#dataTableModal"
+                            >Demos</button>
                     <button type="button" class="btn btn-success" id="submit_table">Submit</button>
                 </div>
             </div>
@@ -153,6 +155,41 @@
         <div id="heatmap"></div>
     </div>
 </div>
+
+## =====================================================================================================================
+
+<%block name="modal">
+    <div class="modal fade" tabindex="-1" id="dataTableModal">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Demo data</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <p>All examples are from empirical data.</p>
+          <div class="list-group" id="demoData">
+              %for demo in demo_data:
+                  <button type="button" class="list-group-item list-group-item-action"
+                          data-values="${demo_data[demo]}"
+                          data-citation=""
+                          data-mutants=""
+                          data-name="${demo}"
+                  >${demo.replace('_', ' ')}</button>
+              %endfor
+</div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+</%block>
+
+## =====================================================================================================================
 
 <%block name="code">
     <script>
