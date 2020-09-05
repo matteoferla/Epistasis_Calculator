@@ -79,8 +79,8 @@ class EpiAuxMixin(EpiBaseMixin):
     @classmethod
     def from_file(cls, your_study, infile):
         # No sanitisation... TODO
-        table = pd.read_excel(
-            infile)  # here we take the input given by the user in the excel tqble we previously generated
+        # here we take the input given by the user in the excel tqble we previously generated
+        table = pd.read_excel(infile)
         return cls.from_pandas(your_study, table)
 
     @classmethod

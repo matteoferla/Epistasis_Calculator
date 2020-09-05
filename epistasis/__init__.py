@@ -216,11 +216,11 @@ class Epistatic(_EA, _EB):
         # I don't know why but this method alters foundment_values, which may not be intended? MF
         # actually this makes a shallow copy... so  shmeh
         foundment_values = self.foundment_values
-
         additivity_list = []
-        if np.any(foundment_values == '+'):
-            foundment_values[
-                foundment_values == "+"] = 1  # here I change the + and - for 1 and 0. This is useful for calculations
+        # foundment_values is a np.array of 1/0. however, user may have given a +/-
+        if foundment_values.dtype == np.dtype('<U1'): # formerly: np.any(foundment_values == '+') (FutureWarning)
+            foundment_values[foundment_values == "+"] = 1
+            # here I change the + and - for 1 and 0. This is useful for calculations
             foundment_values[foundment_values == "-"] = 0
         i = 1
         while i < len(foundment_values) - 1:  # I go through the sign mqtrix
@@ -277,7 +277,8 @@ class Epistatic(_EA, _EB):
 
     def theoretical_stats_selectivity(self):
         """
-        the function above calculates the theoretical average and standard deviations based on the article that Carlos and his colleagues has written. This is for selectivity values
+        the function above calculates the theoretical average and standard deviations based on the article that Carlos
+        and his colleagues has written. This is for selectivity values
         :return:
         """
         grand_final = []
@@ -350,7 +351,6 @@ class Epistatic(_EA, _EB):
             at_last = (elt5[len(self.mutations_list) + 1:][0]) - (elt5[len(self.mutations_list) + 1:][2])
             elt5 = np.append(elt5, at_last)
             all_of_it.append(elt5)
-
         return np.array(all_of_it)
 
     def what_epistasis_sign_selectivity(self, all_of_it):
