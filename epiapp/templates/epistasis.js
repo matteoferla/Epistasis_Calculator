@@ -50,7 +50,7 @@ $(document).ready(function() {
                 body += `<td>${ordered_power_set[i].map((v,i)=>v == "1" ? "+" : "-")[j]}</td>`;
             }
             for (var j = 0; j < replicate_number; j++) {
-                body += `<td><input placeholder="xxx" type="number" data-toggle="tooltip" data-placement="top" title="Empirical value" id="M${i}R${j}"></td>`;
+                body += `<td><input placeholder="NaN" type="number" data-toggle="tooltip" data-placement="top" title="Empirical value" id="M${i}R${j}"></td>`;
             }
             body += '</tr>';
         }

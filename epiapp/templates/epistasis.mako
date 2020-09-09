@@ -13,7 +13,7 @@
         <p>This site accepts two ways of inputting the data. The default is by generating
             and filling out a table online, the second is by generating and filling
             out an Excel spreadsheet and uploading it.</p>
-        <p>In the case of a single replicate, the calculations </p>
+        <p>Cases with a single replicated are accepted. Leave a replicate blank if missing.</p>
     </div>
 </div>
 <br>
