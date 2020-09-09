@@ -3,10 +3,13 @@ __version__ = '1.3'
 __date__ = '3 Sept 2020'
 
 import numpy as np
+from warnings import warn
 import math, random
 
 from .epi_aux_mixin import EpiAuxMixin as _EA
 from .epi_base_mixin import EpiBaseMixin as _EB
+
+from typing import List
 
 
 class Epistatic(_EA, _EB):
@@ -27,11 +30,9 @@ class Epistatic(_EA, _EB):
             * origin_finder
             * please_more_combinations
             * table_filler
-            * theoretical_stats_conversion
-            * theoretical_stats_selectivity
+            * theoretical_stats
             * value_list_sorter
-            * what_epistasis_sign_conversion
-            * what_epistasis_sign_selectivity
+            * what_epistasis_sign
             Class method: user_input for interactive input. (no parameters! `Epistasis.user_input()`)
             Attributes:
             TODO
@@ -94,20 +95,29 @@ class Epistatic(_EA, _EB):
 
         # this time for conversion, which is a little different albeit very close.
 
-        if self.your_study == "S":  # at the very beginning of the code we ask for "selectivity" or "conversion" from the USER so that the program actually adapt to what the user wants.
-            all_of_it = self.theoretical_stats_selectivity()
-        elif self.your_study == "C":
-            all_of_it = self.theoretical_stats_conversion()
-
-        # similarily to before, conversion and sleectivity differ a little so I had to adapt the code
-        if self.your_study == "C":  # same logic as before regarding adaptation of the code to what the user wants
-            epistasis = self.what_epistasis_sign_conversion(all_of_it)
-        elif self.your_study == "S":
-            epistasis = self.what_epistasis_sign_selectivity(all_of_it)
+        # the "selectivity" or "conversion" difference (self.your_study) is handled now by the avgWT dyn property
+        all_of_it = self.theoretical_stats()
+        epistasis = self.what_epistasis_sign(all_of_it)
         self.all_of_it = np.c_[all_of_it, epistasis]
         # this all_of_it value is all the data we need, across the program we complete it as it goes
         return self
 
+    # ============== property methods ==================================================================================
+
+    _avgWT = None # cached property
+    @property
+    def avgWT(self):
+        # avgWT is zero for selectivity.
+        if self._avgWT is not None:
+            pass
+        elif self.your_study == 'S':
+            self._avgWT = 0
+        elif self.your_study == 'C':
+            WT = list(self.mean_and_sd_dic.keys())[0]  # This seems dangerous
+            self._avgWT = self.mean_and_sd_dic[WT][0]
+        else:
+            raise ValueError
+        return self._avgWT
 
     # ============== Dependant methods =================================================================================
 
@@ -275,94 +285,85 @@ class Epistatic(_EA, _EB):
                 final_comb_list)  # and we repeat the function for the final cycle but with the final list as a variable
         return final_comb_list
 
-    def theoretical_stats_selectivity(self) -> np.ndarray:
+    def theoretical_stats(self) -> np.ndarray:
         """
         the function above calculates the theoretical average and standard deviations based on the article that Carlos
-        and his colleagues has written. This is for selectivity values
-        :return:
+        and his colleagues have written.
+
+        This is a refactored method based on the observation that avgWT was the only difference.
+
+        :return: np.ndarray
         """
         grand_final = []
         all_of_it = []
+        # this operation, which I am not sure why it is needed, was repeated  - MF
+        strigify = lambda table: str(table).replace('0', '-')\
+                                           .replace('1', '+')\
+                                           .replace('.', '')\
+                                           .replace("'", "")\
+                                           .replace("'", "")\
+                                           .replace(" ","")
+        # =========================================
         for elt in self.final_comb_table:
-            for elt2 in self.mean_and_sd_dic.keys():
-                if str(elt[:self.mutation_number]) == str(elt2):
-                    elt = np.append(elt, list(self.mean_and_sd_dic[elt2]))
-            for elt3 in self.combs_only:
-                if np.array_equal(elt[len(self.mutations_list)], elt3) == True:
-                    theor_mean = np.array([0])
-                    replicate_values = np.zeros((1, len(self.replicate_matrix[0])))
-                    for elt4 in elt3:
-                        target = self.mean_and_sd_array[elt4 - 1][0]
-                        theor_mean = np.add(theor_mean, target)
-                        target2 = self.replicate_matrix[elt4 - 1]
-                        replicate_values = np.add(replicate_values, target2)
-                    theor_sd = (np.std(replicate_values)) / math.sqrt(self.replicate_number)
-                    elt = np.append(elt, list(theor_mean))
-                    elt = np.append(elt, theor_sd)
-                    grand_final.append(elt)
-        for elt5 in grand_final:
-            at_last = (elt5[len(self.mutations_list) + 1:][0]) - (elt5[len(self.mutations_list) + 1:][2])
-            elt5 = np.append(elt5, at_last)
-            all_of_it.append(elt5)
-
-        return np.array(all_of_it)
-
-    def theoretical_stats_conversion(self) -> np.ndarray:
-        grand_final = []
-        all_of_it = []
-        keys = list(self.mean_and_sd_dic.keys())
-        WT = keys[0]
-        avgWT = self.mean_and_sd_dic[WT][0]
-        for elt in self.final_comb_table:
-            for elt2 in self.mean_and_sd_dic.keys():
-                if self.verbose:
-                    print(str(elt[:self.mutation_number]).replace("'", "").replace(" ", ""),
-                          str(elt2).replace('0.', '-').replace('1.', '+').replace("'", "").replace("'", "").replace(" ",
-                                                                                                                    ""))
-                if str(elt[:self.mutation_number]).replace("'", "").replace("'", "").replace(" ", "") == str(
-                        elt2).replace('0.', '-').replace('1.', '+').replace("'", "").replace("'", "").replace(" ", ""):
+            # elt is np.ndarray: ['+' '+' '-' (2, 3)] to which stuff gets added...
+            # ======== Empirical
+            for elt2 in self.mean_and_sd_dic.keys(): # this is np.array of +/- in binary style
+                if self.verbose: # present in conversion only
+                    print(strigify(elt[:self.mutation_number]), strigify(elt2))
+                if strigify(elt[:self.mutation_number]) == strigify(elt2):
                     elt = np.append(elt, list(self.mean_and_sd_dic[elt2]))
                     if self.verbose:
                         print('MATCH')
+                    break
+            else:
+                raise ValueError('Experimental values could not be calculated because of odd +/- format')
+            # ======== Theoretical
             for elt3 in self.combs_only:
                 if np.array_equal(elt[len(self.mutations_list)], elt3) == True:
                     theor_mean = np.array([0])
                     replicate_values = np.zeros((1, len(self.replicate_matrix[0])))
                     for elt4 in elt3:
-                        new_target = []
-                        target = self.mean_and_sd_array[elt4 - 1][0] - avgWT
-                        theor_mean = np.add(theor_mean, target)
+                        target = self.mean_and_sd_array[elt4 - 1][0] - self.avgWT # avgWT is 0 for S
                         target2 = self.replicate_matrix[elt4 - 1]
+                        theor_mean = np.add(theor_mean, target)
+                        replicate_values = np.add(replicate_values, target2)
+                        # the following is new_target == target2 for argWT == 0
+                        new_target = []
                         for value in target2:
-                            value = value - avgWT
+                            value = value - self.avgWT
                             new_target.append(value)
                         replicate_values = np.add(replicate_values, new_target)
                         # print(replicate_values)
                     good_one = list(theor_mean)[0]
-                    good_one = avgWT + good_one
+                    good_one = self.avgWT + good_one
                     theor_sd = (np.std(replicate_values)) / math.sqrt(self.replicate_number)
+                    # NB. Blind refactoring: list(theor_mean) in S, good_one in C. Different types??
                     elt = np.append(elt, good_one)
                     elt = np.append(elt, theor_sd)
                     grand_final.append(elt)
+                    # elt is a numpy.ndarray row ['+' '+' '+' (4, 5) 68.4 4.4 30.40 4.0]
+                    # grand_final is a table
         if self.verbose:
             print('mutationlist', self.mutations_list)
             print('grand_final', grand_final)
+        # =========================================
         for elt5 in grand_final:
+            # ['+' '+' '-' (2, 3) 1.0 0.0]
             at_last = (elt5[len(self.mutations_list) + 1:][0]) - (elt5[len(self.mutations_list) + 1:][2])
             elt5 = np.append(elt5, at_last)
             all_of_it.append(elt5)
         return np.array(all_of_it)
 
-    def what_epistasis_sign_selectivity(self, all_of_it):
+    def what_epistasis_sign(self, all_of_it: np.ndarray) -> List[str]:
         sign = []
         epi_list = []
         what_epi = []
         i = 0
         for elt in all_of_it:
             noinspi = elt[len(self.mutations_list) + 1:]
-            Gexp = noinspi[0]
+            Gexp = noinspi[0] - self.avgWT
             Gexpstd = noinspi[1]
-            Gcomb = noinspi[2]
+            Gcomb = noinspi[2] - self.avgWT
             Gcombstd = noinspi[3]
             GexpES = Gexp - Gexpstd
             GcombES = Gcomb + Gcombstd
@@ -376,13 +377,15 @@ class Epistatic(_EA, _EB):
                 sign.append("- ")
             elif Gexp > Gcomb:
                 sign.append("+ ")
+            else:
+                sign.append("= ")
         for elt2 in self.combs_only:
             combavg = []
             for lign in all_of_it:
                 if lign[len(self.mutations_list)] == elt2:
                     double_mutant_avg = lign[len(self.mutations_list) + 1]
             for elt3 in elt2:
-                mutant_avg = self.replicate_matrix[elt3 - 1]
+                mutant_avg = self.replicate_matrix[elt3 - 1] - self.avgWT
                 mutant_avg = float(np.average(mutant_avg))
                 combavg.append(mutant_avg)
             count = 0
@@ -391,14 +394,20 @@ class Epistatic(_EA, _EB):
                     count = count - 1
                 elif avg > 0:
                     count = count + 1
+                else:
+                    pass
             if abs(count) == len(combavg):
                 if count > 0 and double_mutant_avg > 0 or count < 0 and double_mutant_avg < 0:
                     epi_list.append("Magnitude epistasis")
                 elif count > 0 and double_mutant_avg < 0 or count < 0 and double_mutant_avg > 0:
                     epi_list.append("Reciprocal sign epistasis")
+                else:
+                    raise ValueError('No idea. Unterminated if statement. MF')
             elif abs(count) != len(combavg):
                 epi_list.append("Sign epistasis")
-
+            else:
+                raise ValueError('No idea. Unterminated if statement. MF')
+        # end of combo_only loop
         while i < len(sign):
             if sign[i] != "Additive":
                 what_epi.append(sign[i] + epi_list[i])
@@ -407,60 +416,4 @@ class Epistatic(_EA, _EB):
             i = i + 1
         return what_epi
 
-    # finally the great last function that also uses Carlos'equations to determine the nature of epistasis.
-    def what_epistasis_sign_conversion(self, all_of_it):
-        sign = []
-        epi_list = []
-        what_epi = []
-        i = 0
-        keys = list(self.mean_and_sd_dic.keys())
-        WT = keys[0]
-        avgWT = self.mean_and_sd_dic[WT][0]
-        for elt in all_of_it:
-            noinspi = elt[len(self.mutations_list) + 1:]
-            Gexp = noinspi[0] - avgWT
-            Gexpstd = noinspi[1]
-            Gcomb = noinspi[2] - avgWT
-            Gcombstd = noinspi[3]
-            GexpES = Gexp - Gexpstd
-            GcombES = Gcomb + Gcombstd
-            GexpES2 = Gexp + Gexpstd
-            GcombES2 = Gcomb - Gcombstd
-            if GexpES < GcombES and Gexp > Gcomb:
-                sign.append("Additive")
-            elif GexpES2 > GcombES2 and Gexp < Gcomb:
-                sign.append("Additive")
-            elif Gexp < Gcomb:
-                sign.append("- ")
-            elif Gexp > Gcomb:
-                sign.append("+ ")
-        for elt2 in self.combs_only:
-            combavg = []
-            for lign in all_of_it:
-                if lign[len(self.mutations_list)] == elt2:
-                    double_mutant_avg = lign[len(self.mutations_list) + 1]
-            for elt3 in elt2:
-                mutant_avg = self.replicate_matrix[elt3 - 1] - avgWT
-                mutant_avg = float(np.average(mutant_avg))
-                combavg.append(mutant_avg)
-            count = 0
-            for avg in combavg:
-                if avg < 0:
-                    count = count - 1
-                elif avg > 0:
-                    count = count + 1
-            if abs(count) == len(combavg):
-                if count > 0 and double_mutant_avg > 0 or count < 0 and double_mutant_avg < 0:
-                    epi_list.append("Magnitude epistasis")
-                elif count > 0 and double_mutant_avg < 0 or count < 0 and double_mutant_avg > 0:
-                    epi_list.append("Reciprocal sign epistasis")
-            elif abs(count) != len(combavg):
-                epi_list.append("Sign epistasis")
 
-        while i < len(sign):
-            if sign[i] != "Additive":
-                what_epi.append(sign[i] + epi_list[i])
-            else:
-                what_epi.append(sign[i])
-            i = i + 1
-        return what_epi
