@@ -209,8 +209,9 @@ class Epistatic(_EA, _EB):
             data = array[self.mutation_number:]
             data_float = np.array(data).astype(np.float64)
             mutant = str(array[:self.mutation_number])
-            average = float(np.average(data_float))
-            std = float(np.std(data_float)) / math.sqrt(self.replicate_number)
+            average = float(np.nanmean(data_float))
+            N_replicates = np.count_nonzero(~np.isnan(data_float))
+            std = float(np.nanstd(data_float)) / math.sqrt(N_replicates)
             data_dic[mutant] = [average, std]
         for elt in data_dic.values():
             mean_and_sd.append(elt)
@@ -333,10 +334,13 @@ class Epistatic(_EA, _EB):
                             value = value - self.avgWT
                             new_target.append(value)
                         replicate_values = np.add(replicate_values, new_target)
-                        # print(replicate_values)
                     good_one = list(theor_mean)[0]
                     good_one = self.avgWT + good_one
-                    theor_sd = (np.std(replicate_values)) / math.sqrt(self.replicate_number)
+                    # the following ratio  is for sterr.
+                    # The rooted part (N_replicates) is == len(replicates) if no nans present.
+                    N_replicates = np.count_nonzero(~np.isnan(replicate_values.astype(np.float64)))
+                    assert N_replicates > 0, f'There are no usable replicates for {elt3}'
+                    theor_sd = (np.nanstd(np.array(replicate_values, dtype=np.float64))) / math.sqrt(N_replicates)
                     # NB. Blind refactoring: list(theor_mean) in S, good_one in C. Different types??
                     elt = np.append(elt, good_one)
                     elt = np.append(elt, theor_sd)
@@ -386,7 +390,7 @@ class Epistatic(_EA, _EB):
                     double_mutant_avg = lign[len(self.mutations_list) + 1]
             for elt3 in elt2:
                 mutant_avg = self.replicate_matrix[elt3 - 1] - self.avgWT
-                mutant_avg = float(np.average(mutant_avg))
+                mutant_avg = float(np.nanmean(np.array(mutant_avg, dtype=np.float64)))
                 combavg.append(mutant_avg)
             count = 0
             for avg in combavg:
