@@ -129,6 +129,11 @@ class Epistaticizer:
 
     @view_config(route_name='demo')
     def demo(self):
+        """
+        This does nothing. The datasets are passed to the front end as they are small. No need to api it!
+        Returns:
+
+        """
         if 'dataset' not in self.data:
             return {'status': 'error', 'data': None}
         else:

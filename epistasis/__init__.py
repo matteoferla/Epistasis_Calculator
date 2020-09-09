@@ -275,7 +275,7 @@ class Epistatic(_EA, _EB):
                 final_comb_list)  # and we repeat the function for the final cycle but with the final list as a variable
         return final_comb_list
 
-    def theoretical_stats_selectivity(self):
+    def theoretical_stats_selectivity(self) -> np.ndarray:
         """
         the function above calculates the theoretical average and standard deviations based on the article that Carlos
         and his colleagues has written. This is for selectivity values
@@ -307,7 +307,7 @@ class Epistatic(_EA, _EB):
 
         return np.array(all_of_it)
 
-    def theoretical_stats_conversion(self):
+    def theoretical_stats_conversion(self) -> np.ndarray:
         grand_final = []
         all_of_it = []
         keys = list(self.mean_and_sd_dic.keys())

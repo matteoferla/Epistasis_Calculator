@@ -3,8 +3,15 @@ import numpy as np
 class EpiBaseMixin:
     verbose = False
 
-    def __init__(self, your_study, mutation_number, replicate_number, replicate_list=None, mutations_list=None,
-                 mutant_list=None, foundment_values=None, data_array=None, replicate_matrix=None):
+    def __init__(self, your_study:str,
+                 mutation_number:int,
+                 replicate_number:int,
+                 replicate_list=None,
+                 mutations_list=None,
+                 mutant_list=None,
+                 foundment_values=None,
+                 data_array=None,
+                 replicate_matrix=None):
         """
 
         :param your_study: Do you use selectivity or conversion values? Please answer with S (Selectivity) or C (Conversion):
@@ -17,36 +24,43 @@ class EpiBaseMixin:
         :param data_array (optinal):        All the np array
         :param replicate_matrix (optinal):  The number part of the np array
         """
-        ## Compute
-        if not mutations_list:
-            mutations_list = [f'M{i}' for i in range(1, mutation_number + 1)]
-        if not replicate_list:
-            replicate_list = [f"Replicate n°{elt3}" for elt3 in range(1, replicate_number + 1)]
+        # =============================== Parsing
+        if your_study in ('C', 'S'):
+            self.your_study = your_study
+        else:
+            ValueError('Study can only be C or S')
+        #
+        if mutations_list:
+            self.mutations_list = [f'M{i}' for i in range(1, mutation_number + 1)]
+        else:
+            self.mutations_list = mutations_list
+        self.mutation_number = mutation_number
+        #
         if not mutant_list:
-            mutant_list = [f"Mutant {elt4}" for elt4 in range(1, 2 ** mutation_number + 1)]
+            self.mutant_list = [f"Mutant {elt4}" for elt4 in range(1, 2 ** mutation_number + 1)]
+        else:
+            self.mutant_list = mutant_list
+        #
+        if not replicate_list:
+            self.replicate_list = [f"Replicate n°{elt3}" for elt3 in range(1, replicate_number + 1)]
+        else:
+            self.replicate_list = replicate_list
+        self.replicate_number = replicate_number
         # not a loop because of copy.
         if isinstance(foundment_values, list):
-            foundment_values = np.array(foundment_values)
+            self.foundment_values = np.array(foundment_values)
+        else:
+            self.foundment_values = foundment_values
         if isinstance(replicate_matrix, list):
-            replicate_matrix = np.array(replicate_matrix)
+            self.replicate_matrix = np.array(replicate_matrix)
+        else:
+            self.replicate_matrix = replicate_matrix
+        #
         if isinstance(data_array, list):  # technically this should be generated... TODO
-            data_array = np.array(data_array)
-
-        ## Save
-        local = locals()
-        for variable in ('your_study',
-                         'mutation_number',
-                         'replicate_number',
-                         'replicate_list',
-                         'mutations_list',
-                         'mutant_list',
-                         'mutation_number',
-                         'replicate_number',
-                         'foundment_values',
-                         'replicate_matrix',
-                         'data_array'):
-            setattr(self, variable, local[variable])
-        # Preallocation
+            self.data_array = np.array(data_array)
+        else:
+            self.data_array = data_array
+        # =============================== Preallocation
         self.mean_and_sd_dic = None
         self.mean_and_sd_array = None
         self.all_of_it = None
