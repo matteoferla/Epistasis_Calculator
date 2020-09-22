@@ -33,14 +33,14 @@ class Epistaticizer:
             filename = os.path.join(self.temp_path, '{0}.{1}'.format(uuid.uuid4(), 'xlsx'))
             data.save(filename)
             self.request.session['epistasis'] = filename
-            suppinfo = ["Combinations", "Experimental average", "Experimental standard deviation", "Theoretical average",
-                        "Theoretical standard deviation", "Exp.avg - Theor.avg", "Epistasis type"]
+            suppinfo = ["Combinations", "Experimental average", "Experimental standard error", "Theoretical average",
+                        "Theoretical standard error", "Exp.avg - Theor.avg", "Epistasis type"]
             raw = {'theoretical': {'data': data.all_of_it.tolist(), 'columns': data.mutations_list + suppinfo,
                                    'rows': data.comb_index},
                    'empirical': {'data': data.foundment_values.tolist(),
-                                 'columns': data.mutations_list + ["Average", "Standard deviation"],
+                                 'columns': data.mutations_list + ["Average", "Standard error"],
                                  'rows': data.mutant_list}}
-
+            raw = self.sanitize_nan(raw)
             table = '<div class="table-responsive"><table class="table table-striped"><thead class="thead-dark">{thead}</thead><tbody>{tbody}</tbody></table></div>'
             td = '<td>{}</td>'
             th = '<th>{}</th>'
@@ -51,7 +51,7 @@ class Epistaticizer:
                                      for
                                      x in data.all_of_it[i]]))) for i in range(len(data.comb_index))]))
             emp = table.format(thead=tr.format(
-                ''.join([th.format(x) for x in [''] + data.mutations_list + ["Average", "Standard deviation"]])),
+                ''.join([th.format(x) for x in [''] + data.mutations_list + ["Average", "Standard error"]])),
                 tbody=''.join([tr.format(th.format(data.mutant_list[i] + ''.join(
                     [td.format(x) if isinstance(x, str) or isinstance(x, tuple) else td.format(round(x, 1)) for x
                      in data.foundment_values[i]]))) for i in range(len(data.mutant_list))]))
@@ -76,6 +76,17 @@ class Epistaticizer:
             log.warning(str(err))
             log.debug(traceback.format_exc())
             return {'html': 'ERROR: ' + str(err)}
+
+    def sanitize_nan(self, obj):
+        if isinstance(obj, dict):
+            return {k: self.sanitize_nan(v) for k, v in obj.items()}
+        elif isinstance(obj, list):
+            return [self.sanitize_nan(v) for v in obj]
+        elif str(obj) == 'nan':
+            return None
+        else:
+            return obj
+
 
     def via_table(self):
         return Epistatic(**self.data).calculate()

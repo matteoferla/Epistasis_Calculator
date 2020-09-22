@@ -52,7 +52,7 @@ class EpiBaseMixin:
         else:
             self.foundment_values = foundment_values
         if isinstance(replicate_matrix, list):
-            self.replicate_matrix = np.array(replicate_matrix)
+            self.replicate_matrix = np.array(replicate_matrix, dtype=np.float)
         else:
             self.replicate_matrix = replicate_matrix
         #

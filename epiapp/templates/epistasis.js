@@ -12,7 +12,6 @@ String.prototype.format = String.prototype.format ||
             var args = ("string" === t || "number" === t) ?
                 Array.prototype.slice.call(arguments) :
                 arguments[0];
-
             for (key in args) {
                 str = str.replace(new RegExp("\\{" + key + "\\}", "gi"), args[key]);
             }
@@ -44,7 +43,7 @@ $(document).ready(function() {
         var body = '';
         var ordered_power_set=Array(Math.pow(2, mutation_number)).fill(' ').map((v,i)=>(i).toString(2).padStart(mutation_number,'0').split("")).reverse().sort(function(a, b){return a.reduce(function (accumulator, currentValue) {return accumulator + parseInt(currentValue)},0) - b.reduce(function (accumulator, currentValue) {return accumulator + parseInt(currentValue)},0)});
         for (var i = 0; i < Math.pow(2, mutation_number); i++) { // tbody rows...
-            body += `<tr name='mutant' data-combo=${ordered_power_set[i].join('')}><td></td>`;
+            body += `<tr name='mutant' data-combo=${ordered_power_set[i].join('')}><td><button class="btn btn-outline-danger deletor"><i class="far fa-times"></i></button></td>`;
             for (var j = 0; j < mutation_number; j++) {
                 //body += `<td>${(i).toString(2).padStart(mutation_number,'0').split("").map((v,i)=>v == "1" ? "+" : "-")[j]}</td>`;
                 body += `<td>${ordered_power_set[i].map((v,i)=>v == "1" ? "+" : "-")[j]}</td>`;
@@ -57,6 +56,11 @@ $(document).ready(function() {
 
         var txt = `<table class='table table-striped'><thead>${header}</thead><tbody>${body}</tbody></table>`;
         $("#mut_input_table").html(txt);
+        $('.deletor').click(event => {
+            const row = $(event.target).parents('tr');
+            row.hide();
+            row.find('input').val('');
+        });
     }
 
     $("#make_table").click(function() {
@@ -80,6 +84,10 @@ $(document).ready(function() {
     });
     $('#demo').click(function() {
         alert("This does nothing")
+    });
+
+    $('#random_table').click(function () {
+        $('[name="mutant"] input').each(function (a,b) {$(this).val(Math.random())});
     });
 
     function make_graphs(reply, mutation_number) {
@@ -498,12 +506,13 @@ $(document).ready(function() {
                 processData: false,
                 cache: false,
                 contentType: false,
-                success: function(result) {
+                success: function(reply) {
                     //reply = JSON.parse(result.message);
-                    reply = result;
                     $("#results").html(reply['html']);
                     window.sessionStorage.setItem('data', reply);
-                    make_graphs(reply,mutation_number);
+                    if (reply.raw !== undefined) {
+                        make_graphs(reply,mutation_number);
+                    }
                     $('#res').collapse('show');
                     $('#intro').collapse('hide');
                     $('#directly').collapse('hide');

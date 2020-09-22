@@ -65,11 +65,20 @@
             <div class="col-xl-6 offset-md-2">
                 <br>
                 <div class="btn-group" role="group">
-                    <button type="button" class="btn btn-secondary" id="clear_table">Clear</button>
+                    <button type="button" class="btn btn-danger"
+                            id="clear_table"
+                            data-toggle="tooltip" title="Remove the filled table"
+                    ><i class="far fa-trash-alt"></i> Clear</button>
+                    <button type="button" class="btn btn-secondary"
+                            id="random_table"
+                            data-toggle="tooltip" title="Fill the table with random numbers. This is actually meaningless and serves the purpose of allowing users to try data that is not the demo"
+                    ><i class="far fa-dice"></i> Random</button>
                     <button type="button" class="btn btn-primary" id="demo_table"
                             data-toggle="modal" data-target="#dataTableModal"
-                            >Demos</button>
-                    <button type="button" class="btn btn-success" id="submit_table">Submit</button>
+                            data-toggle="tooltip" title="Use empirical data"
+                            ><i class="far fa-hand-holding-magic"></i> Demos</button>
+
+                    <button type="button" class="btn btn-success" id="submit_table"><i class="far fa-calculator"></i> Submit</button>
                 </div>
             </div>
         </div>
@@ -132,9 +141,12 @@
             <div class="col-xl-6 offset-md-2">
                 <br>
                 <div class="btn-group" role="group">
-                    <button type="button" class="btn btn-secondary" id="clear">Clear</button>
-                    <button type="button" class="btn btn-primary" id="demo">Demo</button>
-                    <button type="button" class="btn btn-success" id="submit">Submit</button>
+                    <button type="button" class="btn btn-danger"
+                            id="clear"
+                            data-toggle="tooltip" title="Remove the filled table"
+                    ><i class="far fa-trash-alt"></i>  Clear</button>
+                    <!-- <button type="button" class="btn btn-primary" id="demo">Demo</button> -->
+                    <button type="button" class="btn btn-success" id="submit"><i class="far fa-calculator"></i>  Submit</button>
                 </div>
             </div>
         </div>

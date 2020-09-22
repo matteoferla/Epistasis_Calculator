@@ -55,7 +55,7 @@ class Epistatic(_EA, _EB):
 
         all_combinations = self.please_more_combinations(origins)
 
-        # here will be made the combinations table
+        # ## here will be made the combinations table
         count_list = []
         for elt in all_combinations:
             count_list.append((elt[0]).count(1))
@@ -71,15 +71,21 @@ class Epistatic(_EA, _EB):
         # this line is important for the final table, it gives a proper name to each combination
 
         self.combs_only = [elt[1] for elt in ordered_combs]
-
         # this gives a list of the mutant combinations only
         signs_only = []
         for elt in ordered_combs:
             signs_only.append(elt[0])
         # same as above but for the signs only
         reshaped_signs = np.reshape(signs_only, ((len(signs_only), (len(self.mutations_list)))))
-        reshaped_combs = np.reshape(self.combs_only, ((len(signs_only), 1)))
-        # reshqping everything to have a god format for the final table
+        # in the case of 2 mutants only the math needs a hack or (2,1) => (1,1) fails. MF
+        # reshaped_combs normally is a np.array of tuples... but gets cast "incorrectly" when there's only one.
+        if len(signs_only) != 1: # more than 2
+            reshaped_combs = np.reshape(self.combs_only, (len(signs_only), 1))
+        else:
+            reshaped_combs = np.zeros((1, 1)).astype(object)
+            reshaped_combs[0, 0] = self.combs_only[0]
+
+        # reshaping everything to have a good format for the final table
 
         # so a method (the origin one) was altering foundament and here is reverted.
         # I made a copy of it as it was a fishy piece of code,
@@ -211,8 +217,11 @@ class Epistatic(_EA, _EB):
             mutant = str(array[:self.mutation_number])
             average = float(np.nanmean(data_float))
             N_replicates = np.count_nonzero(~np.isnan(data_float))
-            std = float(np.nanstd(data_float)) / math.sqrt(N_replicates)
-            data_dic[mutant] = [average, std]
+            if N_replicates: # non-empty row.
+                std = float(np.nanstd(data_float)) / math.sqrt(N_replicates)
+                data_dic[mutant] = [average, std]
+            else:
+                data_dic[mutant] = [np.nan, np.nan]
         for elt in data_dic.values():
             mean_and_sd.append(elt)
         return data_dic, mean_and_sd
@@ -339,9 +348,11 @@ class Epistatic(_EA, _EB):
                     # the following ratio  is for sterr.
                     # The rooted part (N_replicates) is == len(replicates) if no nans present.
                     N_replicates = np.count_nonzero(~np.isnan(replicate_values.astype(np.float64)))
-                    assert N_replicates > 0, f'There are no usable replicates for {elt3}'
-                    theor_sd = (np.nanstd(np.array(replicate_values, dtype=np.float64))) / math.sqrt(N_replicates)
-                    # NB. Blind refactoring: list(theor_mean) in S, good_one in C. Different types??
+                    if N_replicates > 0:
+                        theor_sd = (np.nanstd(np.array(replicate_values, dtype=np.float64))) / math.sqrt(N_replicates)
+                        # NB. Blind refactoring: list(theor_mean) in S, good_one in C. Different types??
+                    else:
+                        theor_sd = np.nan
                     elt = np.append(elt, good_one)
                     elt = np.append(elt, theor_sd)
                     grand_final.append(elt)
@@ -406,7 +417,7 @@ class Epistatic(_EA, _EB):
                 elif count > 0 and double_mutant_avg < 0 or count < 0 and double_mutant_avg > 0:
                     epi_list.append("Reciprocal sign epistasis")
                 else:
-                    raise ValueError('No idea. Unterminated if statement. MF')
+                    epi_list.append("Insufficient data")
             elif abs(count) != len(combavg):
                 epi_list.append("Sign epistasis")
             else:
