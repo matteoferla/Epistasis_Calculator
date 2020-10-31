@@ -18,8 +18,8 @@ class EpiBaseMixin:
         :param mutation_number: Please indicate your mutation number:
         :param replicate_number: Please indicate your replicate number (if some replicates are faulty, please fill the table with the average of the others otherwise the program might give unexpected results) :
         :param replicate_list (optinal): Replicate n°%s
-        :param mutations_list (optinal): Please indicate the mutation n°%s:
-        :param mutant_list (optinal):
+        :param mutations_list (optinal): Please indicate the mutation n°%s: The list of the names of the mutations
+        :param mutant_list (optinal): The list of variants (each with a set of mutations)
         :param foundment_values (optinal):  The +/- np array
         :param data_array (optinal):        All the np array
         :param replicate_matrix (optinal):  The number part of the np array
@@ -30,7 +30,7 @@ class EpiBaseMixin:
         else:
             ValueError('Study can only be C or S')
         #
-        if mutations_list:
+        if not mutations_list:
             self.mutations_list = [f'M{i}' for i in range(1, mutation_number + 1)]
         else:
             self.mutations_list = mutations_list

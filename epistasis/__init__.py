@@ -127,17 +127,17 @@ class Epistatic(_EA, _EB):
 
     # ============== Dependant methods =================================================================================
 
-    def create_combination(self):
+    def create_combination(self) -> List[dict]:
         """
         this function creates the mutant combinations based on the number you indicated in mutation_number
+
         :return: list of dicts
         """
         dic_list = []
         while len(self.mutant_list) > len(dic_list):
-            for elt in self.mutant_list:
+            for i in self.mutant_list:
                 elt = {}
-                for elt2 in range(1,
-                                  self.mutation_number + 1):
+                for elt2 in range(1, self.mutation_number + 1):
                     # here we attribute a number for + and - and roll the dice to obtain a random combination under
                     # the form of a dictionary !
                     evolution_dice = random.randint(0, 1)
