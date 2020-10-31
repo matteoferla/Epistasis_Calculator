@@ -4,7 +4,7 @@ from pyramid.response import FileResponse
 import os, traceback, uuid, shutil, logging, time
 import pandas as pd
 import re, json
-from typing import List, Dict
+from typing import List, Dict, Union
 
 log = logging.getLogger(__name__)
 
@@ -166,21 +166,27 @@ class Epistaticizer:
         epiappfolder = os.path.split(viewfolder)[0]
         reporoot = os.path.split(epiappfolder)[0]
         demofolder = os.path.join(reporoot, 'demo')
+        with open(os.path.join(demofolder, 'demo.json'), 'r') as w:
+            demo_metadata = {entry['file']: entry for entry in json.load(w)}
         for filename in os.listdir(demofolder):
             name, extension = os.path.splitext(filename)
             if extension == '.xlsx':
                 try:
-                    cls.demo_data[name] = cls.parse_demo(os.path.join(demofolder, filename))
+                    metadata = demo_metadata[filename]
+                    cls.demo_data[name] = cls.parse_demo(os.path.join(demofolder, filename), metadata)
                     log.info(f'Demo dataset {filename} loaded')
                 except Exception as error:
                     log.error(f'Demo dataset {filename} failed to load. {error.__class__.__name__}: {error}')
+            else:
+                pass # not a table.
 
     @classmethod
-    def parse_demo(cls, filepath) -> Dict[str, List[float]]:
+    def parse_demo(cls, filepath, metadata: Dict[Dict[str, Union[str, int]]]) -> Dict[str, List[float]]:
         """
         called by ``load_demo_data`` to do the actual reading
         Args:
             filepath:
+            metadata:
 
         Returns:
 
