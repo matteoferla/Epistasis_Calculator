@@ -160,7 +160,7 @@ class Epistaticizer:
         Returns: None
 
         """
-        cls.demo_data = {}
+        cls.demo_data = {} # name (no extension to {data: Dict[signname, replicates], ... metadata}
         # os.getcwd() is not necessarily repo root...
         viewfolder = os.path.split(__file__)[0]
         epiappfolder = os.path.split(viewfolder)[0]
@@ -168,6 +168,7 @@ class Epistaticizer:
         demofolder = os.path.join(reporoot, 'demo')
         with open(os.path.join(demofolder, 'demo.json'), 'r') as w:
             demo_metadata = {entry['file']: entry for entry in json.load(w)}
+            # this has extensions
         for filename in os.listdir(demofolder):
             name, extension = os.path.splitext(filename)
             if extension == '.xlsx':
@@ -181,7 +182,7 @@ class Epistaticizer:
                 pass # not a table.
 
     @classmethod
-    def parse_demo(cls, filepath, metadata: Dict[Dict[str, Union[str, int]]]) -> Dict[str, List[float]]:
+    def parse_demo(cls, filepath, metadata: Dict[str, Dict[str, Union[str, int]]]) -> Dict[str, List[float]]:
         """
         called by ``load_demo_data`` to do the actual reading
         Args:
@@ -192,22 +193,20 @@ class Epistaticizer:
 
         """
         df = pd.read_excel(filepath)
-        dexes = list(df.transpose().to_dict().values())
+        name = df.columns[0]
+        mutation_names = df.columns[1: 1 + metadata['mutants']].values
+        replicate_names = df.columns[1 + metadata['mutants']: 1 + metadata['mutants'] + metadata['replicates']].values
+        signnamify = lambda row: ''.join([row[mname] for mname in mutation_names])
+        combine = lambda row: [row[rname] for rname in replicate_names]
+        df = df.assign(signname=df.apply(signnamify, 1),
+                       comboreplicates=df.apply(combine, 1))
+        metadata['data'] = dict(zip(df.signname, df.comboreplicates))
+        metadata['mutation_names'] = list(mutation_names)
+        metadata['replicate_names'] = list(replicate_names)
+        return metadata
 
-        def extract_signname(dex):
-            x = {int(re.match('M(\d+)', k).group(1)): v for k, v in dex.items() if re.match('M\d+', k)}
-            return ''.join(
-                [x[i] for i in range(1, max(x.keys()) + 1)])  # will rightfully crash if there is a missing value
 
-        def extract_replicatenumber(dex):
-            x = {int(re.match('Replicate n°(\d+)', k).group(1)): v for k, v in dex.items() if
-                 re.match('Replicate n°\d+', k)}
-            return [x[i] for i in range(1, max(x.keys()) + 1)]  # will rightfully crash if there is a missing value
 
-        signnames = [extract_signname(dex) for dex in dexes]
-        replicatenumbers = [extract_replicatenumber(dex) for dex in dexes]
-
-        return dict(zip(signnames, replicatenumbers))
 
 # ===== Load data!
 Epistaticizer.load_demo_data()

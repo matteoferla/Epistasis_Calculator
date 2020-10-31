@@ -531,20 +531,25 @@ $(document).ready(function() {
         }
     });
 
+    //JSON.stringify($('#demoData').children().first().data('values'))
+    // "{"file":"AcevedoRocha_p450_selectivity.xlsx","zero":false,"replicates":3,"mutants":3,"data":{"---":[null,null,null],"--+":[null,null,null],"-+-":[null,null,null],"+--":[null,null,null],"++-":[null,null,null],"+-+":[null,null,null],"-++":[null,null,null],"+++":[null,null,null]}}"
+
     $('#demoData button').click(event => {
         const button = $(event.target);
         //const data = JSON.parse(button.data('values'));
         const data = button.data('values');
         // determine rows!
-        const firstK = Object.keys(data)[0];
-        $('#mutation_number2').val(firstK.length);
-        $('#replicate_number2').val(data[firstK].length);
+        const firstK = Object.keys(data.data)[0];
+        $('#mutation_number2').val(data.mutants);
+        $('#replicate_number2').val(data.replicates);
         update_mut_names_div();
+        data.mutation_names.forEach((v, i) => $('#M'+(i+1)).val(v));
+        document.getElementById("zeroWT").checked = data.zero;
         $('#dataTableModal').modal('hide');
         // fill values!
-        Object.keys(data).forEach(k => {const signed = k.replace(/\-/g, '0').replace(/\+/g, '1');
+        Object.keys(data.data).forEach(k => {const signed = k.replace(/\-/g, '0').replace(/\+/g, '1');
                                     const row = $(`[data-combo="${signed}"]`);
-                                    row.find('input').each((i, el) => $(el).val(data[k][i]));
+                                    row.find('input').each((i, el) => $(el).val(data.data[k][i]));
                                     });
     });
 
