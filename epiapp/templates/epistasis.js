@@ -101,7 +101,8 @@ $(document).ready(function() {
         $("#results").html('RUNNING!');
         var data = new FormData();
         data.append("file", document.getElementById('file_upload').files[0]);
-        data.append("your_study", $('input[name=your_study2]:checked').val());
+        // data.append("your_study", $('input[name=your_study2]:checked').val());
+        data.append("your_study", document.getElementById("zeroWT").checked ? 'C' : 'S');
         try {
             $.ajax({
                 url: "/api",
@@ -487,10 +488,12 @@ $(document).ready(function() {
         var data_array = Array.apply(null, Array(mpower)).map((v, i) => foundment_values[i].concat(replicate_matrix[i]));
         //data_array=None,replicate_matrix=None
 
+        // your_study: $('input[name=your_study]:checked').val(),
+
         var data = {
             mutation_number: mutation_number,
             replicate_number: replicate_number,
-            your_study: $('input[name=your_study]:checked').val(),
+            your_study: document.getElementById("zeroWT").checked ? 'C' : 'S',
             mutations_list: mutations_list,
             foundment_values: foundment_values,
             replicate_matrix: replicate_matrix,

@@ -9,7 +9,9 @@
 
     </h3>
     <div class="card-body" id="intro">
-        <p>Calculate the epistatic effect different mutations have on a structure.</p>
+        <p>Combining different mutations into the same variant often does not result in a additive effect,
+            instead the mutations can antagonise or synergise, a phenomenon called epistasis.</p>
+        <p>This tool calculate the epistatic effect different mutations have on a structure.</p>
         <p>This site accepts two ways of inputting the data. The default is by generating
             and filling out a table online, the second is by generating and filling
             out an Excel spreadsheet and uploading it.</p>
@@ -30,8 +32,13 @@
     <div class="card-body" id="directly">
         <div class="row">
             <div class="col-xl-4 col-xl-3 col-lg-12">
-                <input type="radio" name="your_study" value="S"> Selectivity &#xA0;
-                <input type="radio" name="your_study" value="C" checked> Conversion
+                <div class="custom-control custom-switch">
+                  <input type="checkbox" class="custom-control-input" id="zeroWT">
+                  <label class="custom-control-label" for="zeroWT"> centre Wild Type
+                    <i class="far fa-question-circle" style="cursor: pointer;" data-toggle="modal" data-target="#zeroWTModal"></i></label>
+                </div>
+                ## <input type="radio" name="your_study" value="S"> Selectivity &#xA0;
+                ## <input type="radio" name="your_study" value="C" checked> Conversion
             </div>
             <div class="col-xl-3 col-xl-3">
                 <div class="input-group">
@@ -131,8 +138,13 @@
     <div class="card-body collapse" id="alt2">
         <div class="row">
             <div class="col-xl-5 col-xl-12 col-lg-12">
-                <input type="radio" name="your_study2" value="S">Selectivity &#xA0;
-                <input type="radio" name="your_study2" value="C" checked>Conversion
+                ## <input type="radio" name="your_study2" value="S">Selectivity &#xA0;
+                ## <input type="radio" name="your_study2" value="C" checked>Conversion
+                <div class="custom-control custom-switch">
+                  <input type="checkbox" class="custom-control-input" id="zeroWT2">
+                  <label class="custom-control-label" for="zeroWT"> centre Wild Type
+                    <i class="far fa-question-circle" style="cursor: pointer;" data-toggle="modal" data-target="#zeroWTModal"></i></label>
+                </div>
             </div>
             <div class="col-xl-7 col-xl-12 col-lg-12">
                 <input type="file" id="file_upload"
@@ -193,6 +205,27 @@
                   >${demo.replace('_', ' ')}</button>
               %endfor
 </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+    <div class="modal fade" tabindex="-1" id="zeroWTModal">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Data centering</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <p>For certain types of dataset it is important to make sure that the data is shifted to making the wild type average is zero.
+        For selectivity this is not required, however it is for conversion.
+        </p>
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
