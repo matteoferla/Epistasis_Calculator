@@ -21,7 +21,7 @@ class Epistaticizer:
     @view_config(route_name='home', renderer='../templates/epistasis.mako')
     def main(self):  # serving static basically.
         log.info('Serving main page')
-        return {'demo_data': {k: json.dumps(v).replace('NaN', 'null') for k, v in self.demo_data.items()}}
+        return {'demo_data': self.demo_data}
 
     @view_config(renderer='json')
     def api(self):

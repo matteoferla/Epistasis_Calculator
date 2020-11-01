@@ -1,5 +1,9 @@
 <%inherit file="layout.mako"/>
 <!---Intro-->
+<%!
+    import json
+
+%>
 <div class="card p-2">
     <h3 class="card-header bg-dark">
 
@@ -196,13 +200,15 @@
       <div class="modal-body">
         <p>All examples are from empirical data.</p>
           <div class="list-group" id="demoData">
-              %for demo in demo_data:
+              %for demo, data in demo_data.items():
                   <button type="button" class="list-group-item list-group-item-action"
-                          data-values="${demo_data[demo]}"
+                          data-values="${json.dumps(data).replace('NaN', 'null')}"
                           data-citation=""
                           data-mutants=""
                           data-name="${demo}"
-                  >${demo.replace('_', ' ')}</button>
+                  >${demo.replace('_', ' ')}
+                      <br/><small class="text-muted">${data["brief"]}
+    </small></button>
               %endfor
 </div>
       </div>

@@ -1,2 +1,7 @@
-[{"file": "AcevedoRocha_p450_conversion.xlsx", "zero": true, "replicates": 3, "mutants": 3},
-  {"file": "AcevedoRocha_p450_selectivity.xlsx", "zero": false, "replicates": 3, "mutants": 3}]
+[{"file": "AcevedoRocha_p450_conversion.xlsx", "zero": true, "replicates": 3, "mutants": 3,
+  "brief": "Cytochrome P450 conversion proportion from this paper as percentages"},
+  {"file": "AcevedoRocha_p450_selectivity.xlsx", "zero": true, "replicates": 3, "mutants": 3,
+    "brief": "Cytochrome P450 selectivity proportion from this paper as percentages"},
+  {"file": "Zhang_PAMO_selectivity_Gibbs.xlsx", "zero": false, "replicates": 1, "mutants": 4,
+    "brief": "PAMO selectivity proportion from Zhang et al. 2014 as -kJ/mol"}
+]
