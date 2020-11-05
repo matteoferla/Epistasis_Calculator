@@ -6,7 +6,7 @@
     "brief": "PAMO selectivity proportion from Zhang et al. 2014 as -kJ/mol"},
   {"file": "Antibiotics_2006.xlsx", "zero": true, "replicates": 1, "mutants": 4,
     "brief": "Antibiotics from Weinreich et al. 2006"},
-  {"file": "kCat_over_km.xlsx.xlsx", "zero": true, "replicates": 1, "mutants": 3,
+  {"file": "kCat_over_km.xlsx", "zero": true, "replicates": 1, "mutants": 3,
     "brief": "k_cat/K_M from Weinreich et al. 2006"},
   {"file": "Temperatures.xlsx", "zero": true, "replicates": 1, "mutants": 4,
     "brief": "Temperatures from Weinreich et al. 2006"}
