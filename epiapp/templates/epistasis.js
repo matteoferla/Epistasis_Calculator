@@ -102,16 +102,25 @@ $(document).ready(function () {
         });
     });
 
-    function make_graphs(reply, mutation_number) {
-        powersetplot("theo", reply['raw'], mutation_number);
-        powersetplot("emp", reply['raw'], mutation_number);
+    function makeGraphs(rawData, mutation_number) {
+        powersetplot("theo", rawData, mutation_number);
+        powersetplot("emp", rawData, mutation_number);
         $('#theo-down').click(function () {
             saveSvgAsPng(document.getElementById("theo-svg"), "theoretical.png")
         });
         $('#emp-down').click(function () {
             saveSvgAsPng(document.getElementById("emp-svg"), "empirical.png")
         });
+        $('#theo-reset').click(function () {
+            $("#theo-graph-plot svg").detach();
+            powersetplot("theo", rawData, mutation_number);
+        });
+        $('#emp-reset').click(function () {
+            $("#emp-graph-plot svg").detach();
+            powersetplot("emp", rawData, mutation_number);
+        });
     }
+
 
     $('#submit').click(function () {
         $("#results").html('RUNNING!');
@@ -132,7 +141,7 @@ $(document).ready(function () {
                     reply = result;
                     $("#results").html(reply['html']);
                     //window.sessionStorage.setItem('data', reply['raw']);
-                    make_graphs(reply, mutation_number);
+                    makeGraphs(reply.raw, mutation_number);
                     $('#res').collapse('show');
                     $('#intro').collapse('hide');
                     $('#directly').collapse('hide');
@@ -148,30 +157,28 @@ $(document).ready(function () {
         }
     });
 
-    function add_datapoint(svg, tooltip, datapoint, layout, nodemap) {
+    function addDatapoint(svg, tooltip, datapoint, layout, nodemap) {
         // datapoint is a dict with x y value color text and info
         // tooltip is the physical tooltip that gets filled with datapoint.info.
-        // store
-        window.originalPositions[layout.where].push(datapoint);
         // plot
         const group = svg.append("g");
-        let data = [{x: 0, y: 0, node: datapoint['node']}];
+        let data = [{x: 0, y: 0, node: datapoint.node}];
         group.data(data)
             .style("cursor", "grab");
         if (datapoint['isLegend'] !== undefined) {
             group.append("text")
-                .attr("x", datapoint["x"] + 20)
-                .attr("y", datapoint["y"] + 6)
+                .attr("x", datapoint.x + 20)
+                .attr("y", datapoint.y + 6)
                 .attr("text-anchor", "left")
                 .style("fill", "black")
-                .text(datapoint["text"]); //.attr("dy", ".35em")
+                .text(datapoint.text); //.attr("dy", ".35em")
         } else {
             group.append("text")
-                .attr("x", datapoint["x"])
-                .attr("y", datapoint["y"] + 20)
+                .attr("x", datapoint.x)
+                .attr("y", datapoint.y + 20)
                 .attr("text-anchor", "middle")
                 .style("fill", "black")
-                .text(datapoint["text"]); //.attr("dy", ".35em")
+                .text(datapoint.text); //.attr("dy", ".35em")
         }
 
         group.append("circle")
@@ -212,8 +219,8 @@ $(document).ready(function () {
                 d.y += d3.event.dy;
                 d3.select(this).attr('transform', 'translate(' + d.x + ',' + d.y + ')');
                 if (d.node !== undefined) {
-                    nodemap[d.node]['x'] += d3.event.dx;
-                    nodemap[d.node]['y'] += d3.event.dy;
+                    nodemap[d.node].x += d3.event.dx;
+                    nodemap[d.node].y += d3.event.dy;
                     make_arrows(svg, nodemap)
                 }
             })
@@ -290,7 +297,7 @@ $(document).ready(function () {
             places = binomials[mutation_number];
         } else {
             places = Array(mutation_number + 1).fill(0);
-            for (var i = 0; i < data['data'].length; i++) {
+            for (var i = 0; i < data.data.length; i++) {
                 var tier = data['data'][i].slice(0, mutation_number).join('').split("+").length - 1;
                 places[tier]++;
             }
@@ -312,8 +319,15 @@ $(document).ready(function () {
         };
 
         // start canvas
-        var tooltip = d3.select("body").append("div").attr("class", "tooltip").style("opacity", 0).style("min-width", "100px");
-        var svg = d3.select("#" + where + "-graph-plot").append("svg:svg").attr("width", "100%").attr("height", (mutation_number + 1) * layout["y_step"] + 50).attr("id", where + "-svg");
+        var tooltip = d3.select("body")
+                        .append("div")
+                        .attr("class", "tooltip")
+                        .style("opacity", 0)
+                        .style("min-width", "100px");
+        var svg = d3.select("#" + where + "-graph-plot")
+                    .append("svg:svg").attr("width", "100%")
+                    .attr("height", (mutation_number + 1) * layout.y_step + 50)
+                    .attr("id", where + "-svg");
 
         // scale
         layout["scale"] = (x_step / 4) / Math.max(...data['data'].map(x => parseFloat(x[layout["chosen_index"]])));
@@ -343,7 +357,7 @@ $(document).ready(function () {
                         node: id.indexOf('+') + 2
                     };
                     nodemap[id.indexOf('+') + 2] = {'x': datapoint['x'], 'y': datapoint['y'], 'origin': [1]}; //x, y, origin_id
-                    add_datapoint(svg, tooltip, datapoint, layout, nodemap);
+                    addDatapoint(svg, tooltip, datapoint, layout, nodemap);
                     layout["x_index"][tier]++;
                 }
             }
@@ -388,13 +402,13 @@ $(document).ready(function () {
                 if (tier > 1) {
                     datapoint.color = epiColors[item[9]];
                     nodemap[i + mutation_number + 2] = {
-                        'x': datapoint['x'],
-                        'y': datapoint['y'],
+                        'x': datapoint.x,
+                        'y': datapoint.y,
                         'origin': item[mutation_number]
                     }; //already an array of int... no need for .slice(1,-1).split(",").map((v,i) => parseInt(v))
                 }
             }
-            add_datapoint(svg, tooltip, datapoint, layout, nodemap);
+            addDatapoint(svg, tooltip, datapoint, layout, nodemap);
 
         }
 
@@ -416,11 +430,11 @@ $(document).ready(function () {
                 text: 'Theoretical',
                 info: 'Theoretical'
             };
-            add_datapoint(svg, tooltip, datapoint, layout, nodemap);
+            addDatapoint(svg, tooltip, datapoint, layout, nodemap);
             /// theoretical SD
             datapoint = {
                 x: x,
-                y: layout["y_offset"] + (layout["mutation_number"] - 1) * layout["y_step"], //bottom
+                y: layout.y_offset + (layout.mutation_number - 1) * layout.y_step, //bottom
                 v: 2,
                 v_sd: 4,
                 v_e: 0,
@@ -429,7 +443,7 @@ $(document).ready(function () {
                 text: 'Theoretical SD',
                 info: 'theoretical SD'
             };
-            add_datapoint(svg, tooltip, datapoint, layout, nodemap);
+            addDatapoint(svg, tooltip, datapoint, layout, nodemap);
 
 
             /// emp
@@ -444,7 +458,7 @@ $(document).ready(function () {
                 text: 'Empirical',
                 info: 'Empirical'
             };
-            add_datapoint(svg, tooltip, datapoint, layout, nodemap);
+            addDatapoint(svg, tooltip, datapoint, layout, nodemap);
 
             x = layout.x_mid + layout.x_offset[widesttier] + (layout.x_index[widesttier] + 4) * layout.x_step; //uber far right
 
@@ -462,7 +476,7 @@ $(document).ready(function () {
                     info: key,
                     isLegend: 1
                 };
-                add_datapoint(svg, tooltip, datapoint, layout, nodemap);
+                addDatapoint(svg, tooltip, datapoint, layout, nodemap);
             });
 
 
@@ -479,7 +493,7 @@ $(document).ready(function () {
                 text: 'Empirical',
                 info: 'Empirical'
             };
-            add_datapoint(svg, tooltip, datapoint, layout, nodemap);
+            addDatapoint(svg, tooltip, datapoint, layout, nodemap);
             /// theoretical SD
             var datapoint = {
                 x: x,
@@ -492,7 +506,7 @@ $(document).ready(function () {
                 text: 'Empirical SD',
                 info: 'Empirical SD'
             };
-            add_datapoint(svg, tooltip, datapoint, layout, nodemap);
+            addDatapoint(svg, tooltip, datapoint, layout, nodemap);
         }
 
         // make arrows
@@ -571,9 +585,9 @@ $(document).ready(function () {
                 success: function (reply) {
                     //reply = JSON.parse(result.message);
                     $("#results").html(reply['html']);
-                    window.sessionStorage.setItem('data', reply);
+                    //window.sessionStorage.setItem('data', reply);
                     if (reply.raw !== undefined) {
-                        make_graphs(reply, mutation_number);
+                        makeGraphs(reply.raw, mutation_number);
                     }
                     $('#res').collapse('show');
                     $('#intro').collapse('hide');
@@ -598,7 +612,7 @@ $(document).ready(function () {
         //const data = JSON.parse(button.data('values'));
         const data = button.data('values');
         // determine rows!
-        if (Object.keys(data.data).length === 0) return 0; //Data is not loaded yet?
+        if (data === undefined) return 0; //Data is not loaded yet?
         const firstK = Object.keys(data.data)[0];
         $('#mutation_number2').val(data.mutants);
         $('#replicate_number2').val(data.replicates);

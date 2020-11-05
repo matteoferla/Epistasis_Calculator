@@ -57,7 +57,17 @@ class Epistaticizer:
                      in data.foundment_values[i]]))) for i in range(len(data.mutant_list))]))
             tabs = '<ul class="nav nav-tabs" id="myTab" role="tablist"><li class="nav-item"><a class="nav-link active" data-toggle="tab" href="#{set}-table" role="tab">Table</a></li><li class="nav-item"><a class="nav-link" data-toggle="tab" href="#{set}-graph" role="tab">Graph</a></li></ul><br/>'
             tabcont = '<div class="tab-content"><div class="tab-pane fade show active" id="{set}-table" role="tabpanel">{table}</div><div class="tab-pane fade" id="{set}-graph" role="tabpanel">{graph}</div></div>'
-            graph = '<div id="{0}-graph-plot"><p>{1}</p><button type="button" class="btn btn-success" id="{0}-down"><i class="fa fa-download" style="margin-left:20px;"></i>Download</button></div>'
+            graph = '''<div id="{0}-graph-plot">
+                                       <p>{1}</p>
+                                       <button type="button" class="btn btn-success" id="{0}-down">
+                                                 <i class="fa fa-download" style="margin-left:20px;"></i>
+                                                 Download
+                                       </button>
+                                       <button type="button" class="btn btn-warning" id="{0}-reset">
+                                                 <i class="fa fa-snowplow" style="margin-left:20px;"></i>
+                                                 Reset
+                                       </button>
+                       </div>'''
             html = '{down}<br/><h3>Theoretical</h3>{theonav}{theotab}<h3>Empirical</h3>{empnav}{emptab}'.format(
                 down='<a class="btn btn-primary" href="/download" download="epistasis_results.xlsx">Download</a>',
                 theotab=tabcont.format(set='theo', table=theo, graph=graph.format('theo',
