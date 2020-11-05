@@ -13,9 +13,9 @@
 
     </h3>
     <div class="card-body" id="intro">
-        <p>Combining different mutations into the same variant often does not result in a additive effect,
+        <p>Combining different mutations into the same variant often does not result in an additive effect,
             instead the mutations can antagonise or synergise, a phenomenon called epistasis.</p>
-        <p>This tool calculate the epistatic effect different mutations have on a structure.</p>
+        <p>This tool calculates the epistatic effect different mutations have on a structure.</p>
         <p>This site accepts two ways of inputting the data. The default is by generating
             and filling out a table online, the second is by generating and filling
             out an Excel spreadsheet and uploading it.</p>
