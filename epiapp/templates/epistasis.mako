@@ -245,6 +245,10 @@
 
 <%block name="code">
     <script>
-        <%include file="epistasis.js"/>
+        $(document).ready(function () {
+            <%include file="format_func.js"/>
+            <%include file="powersetplot.js"/>
+            <%include file="epistasis.js"/>
+        });
     </script>
 </%block>

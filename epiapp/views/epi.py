@@ -25,7 +25,7 @@ class Epistaticizer:
 
     @view_config(renderer='json')
     def api(self):
-        try:
+        try:  # TODO the templating is appalling.
             if 'file' not in self.request.POST:  # JSON
                 data = self.via_table()
             else:  # FormData
@@ -55,8 +55,22 @@ class Epistaticizer:
                 tbody=''.join([tr.format(th.format(data.mutant_list[i] + ''.join(
                     [td.format(x) if isinstance(x, str) or isinstance(x, tuple) else td.format(round(x, 1)) for x
                      in data.foundment_values[i]]))) for i in range(len(data.mutant_list))]))
-            tabs = '<ul class="nav nav-tabs" id="myTab" role="tablist"><li class="nav-item"><a class="nav-link active" data-toggle="tab" href="#{set}-table" role="tab">Table</a></li><li class="nav-item"><a class="nav-link" data-toggle="tab" href="#{set}-graph" role="tab">Graph</a></li></ul><br/>'
-            tabcont = '<div class="tab-content"><div class="tab-pane fade show active" id="{set}-table" role="tabpanel">{table}</div><div class="tab-pane fade" id="{set}-graph" role="tabpanel">{graph}</div></div>'
+            tabs = '''
+                <ul class="nav nav-tabs" id="myTab" role="tablist">
+                    <li class="nav-item">
+                        <a class="nav-link active" data-toggle="tab" href="#{set}-graph" role="tab">Graph</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" data-toggle="tab" href="#{set}-table" role="tab">Table</a>
+                    </li>
+                </ul><br/>
+                '''
+            tabcont = '''
+                        <div class="tab-content">
+                            <div class="tab-pane fade" id="{set}-table" role="tabpanel">{table}</div>
+                            <div class="tab-pane fade show active" id="{set}-graph" role="tabpanel">{graph}</div>
+                        </div>
+                        '''
             graph = '''<div id="{0}-graph-plot">
                                        <p>{1}</p>
                                        <button type="button" class="btn btn-success" id="{0}-down">
@@ -68,15 +82,32 @@ class Epistaticizer:
                                                  Reset
                                        </button>
                        </div>'''
-            html = '{down}<br/><h3>Theoretical</h3>{theonav}{theotab}<h3>Empirical</h3>{empnav}{emptab}'.format(
-                down='<a class="btn btn-primary" href="/download" download="epistasis_results.xlsx">Download</a>',
-                theotab=tabcont.format(set='theo', table=theo, graph=graph.format('theo',
-                                                                                  'Plot of the combinations of mutations. Note that the circles can be dragged, which is useful when the lines criss-cross under a circle.')),
-                theonav=tabs.format(set='theo'),
-                emptab=tabcont.format(set='emp', table=emp, graph=graph.format('emp',
-                                                                               'Graph of the powerset of combinations mutants with circle width correlated to intensity.')),
-                empnav=tabs.format(set='emp')
-            )
+            drag = 'The circles can be dragged, which is useful when the lines criss-cross under a circle.'
+            downbutton = '<a class="btn btn-primary" href="/download" download="epistasis_results.xlsx">Download</a>'
+            theolegend = 'Graph of the expanded powerset of the mutations. ' + \
+                        'The filled circle width correlates with theoretical average. '+\
+                        'The grey halo around the filled circle is it s standard error. '+\
+                        'The outlined circle width correlates with empirical average. '+\
+                        drag
+            theotab = tabcont.format(set='theo', table=theo, graph=graph.format('theo',
+                                                                                theolegend))
+            emplegend = 'Graph of the powerset of the mutants.' + \
+                        'The circle width correlates with theoretical average. '+\
+                        'The lighter halo around the circle is it s standard error. '+\
+                        drag
+            emptab = tabcont.format(set='emp', table=emp, graph=graph.format('emp',
+                                                                             emplegend))
+            html = '''{down}<br/>
+                        <h3>Theoretical</h3>
+                        {theonav}{theotab}
+                        <h3>Empirical</h3>
+                        {empnav}{emptab}'''.format(
+                                                    down=downbutton,
+                                                    theotab=theotab,
+                                                    theonav=tabs.format(set='theo'),
+                                                    emptab=emptab,
+                                                    empnav=tabs.format(set='emp')
+                                                    )
             # timed
             tock = time.time()
             log.info(f'Calculation complete in {tock - self.tick:.3f} seconds')
