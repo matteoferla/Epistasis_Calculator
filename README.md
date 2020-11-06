@@ -80,6 +80,16 @@ Methods:
 
 To get some information during the run for debug purposes, set `Epistatic.verbose` to True.
               
+## Power set
+
+Mathematically, a combination is a set that contains all the subsets of size _k_ of _N_ items. 
+Say `{Alice, Bob, Charlie}` has the following combinations of pairs: `{Alice, Bob}`, `{Alice, Charlie}`, `{Bob, Charlie}`.
+
+Given N items, the set that contains none, combinations of 2, 3+ and all is called a power set.
+Using the above example, the power set contains `{}`, `{Alice, Bob}`, `{Alice, Charlie}`, `{Bob, Charlie}`, `{Alice, Bob, Charlie}`.
+
+However, for ease of speaking the words combination and power set are intermixed in the code.
+
 ## web app
 
 To run the web app locally run `python3 app.py`.

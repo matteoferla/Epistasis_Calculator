@@ -370,12 +370,14 @@ class Epistatic(_EA, _EB):
         return np.array(all_of_it)
 
     def what_epistasis_sign(self, all_of_it: np.ndarray) -> List[str]:
+        # all_of_it is [['+' '+' (2, 3) 0.3012075249147169 0.040928361771436335
+        #   1.0081247600527092 0.39022923215371047 -0.7069172351379923]]
         sign = []
         epi_list = []
         what_epi = []
         i = 0
-        for elt in all_of_it:
-            noinspi = elt[len(self.mutations_list) + 1:]
+        for row in all_of_it:
+            noinspi = row[len(self.mutations_list) + 1:]
             Gexp = noinspi[0] - self.avgWT
             Gexpstd = noinspi[1]
             Gcomb = noinspi[2] - self.avgWT
