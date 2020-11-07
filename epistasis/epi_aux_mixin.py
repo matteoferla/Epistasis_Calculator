@@ -86,8 +86,19 @@ class EpiAuxMixin(EpiBaseMixin):
     @classmethod
     def from_pandas(cls, your_study, table):
         # Determine
+        # case where the first column is the index.
+        if table.iloc[0,0] in ('-','+'):
+            pass
+        elif table.iloc[0,1] in ('-','+'):
+            # the first column is meant to be the index
+            table = table.set_index(table.columns[0])
+        else:
+            raise ValueError('This file is not formatted correctly')
+        # figure out the mutation number.
         for mutation_number, v in enumerate(table.iloc[0]):
-            if str(v) not in '-+':
+            if mutation_number == 0: # first may be name
+                continue
+            elif str(v) not in '-+':
                 break
         replicate_number = len(table.iloc[0]) - mutation_number
         mutations_list = list(table)[:mutation_number]

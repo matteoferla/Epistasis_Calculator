@@ -15,8 +15,18 @@ class Epistaticizer:
 
     def __init__(self, request):
         self.request = request
-        self.data = request.json_body if request.body else {}
+        self._data = {}
         self.tick = time.time()
+
+    @property
+    def data(self):
+        if self._data:
+            return self._data
+        elif self.request.json_body:
+            return self.request.json_body
+        else:
+            log.warning('Request came in without body!')
+            return {}
 
     @view_config(route_name='home', renderer='../templates/epistasis.mako')
     def main(self):  # serving static basically.

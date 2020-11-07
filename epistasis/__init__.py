@@ -52,9 +52,7 @@ class Epistatic(_EA, _EB):
         # self.mean_and_sd_array = np.reshape(self.mean_and_sd_maker(data_array)[1], ((Mutant_number), 2))
         self.mean_and_sd_array = np.reshape(self.mean_and_sd_maker()[1], (len(self.create_combination()), 2))
         origins = self.origin_finder()
-
         all_combinations = self.please_more_combinations(origins)
-
         # ## here will be made the combinations table
         count_list = []
         for elt in all_combinations:
@@ -90,7 +88,8 @@ class Epistatic(_EA, _EB):
         # so a method (the origin one) was altering foundament and here is reverted.
         # I made a copy of it as it was a fishy piece of code,
         # so no reconversion needed.
-        self.final_comb_table = np.c_[reshaped_signs, reshaped_combs]
+        self.final_comb_table = np.c_[reshaped_signs, reshaped_combs] #.astype('object')
+        print(self.final_comb_table)
         self.final_comb_table[self.final_comb_table == 1] = "+"
         self.final_comb_table[self.final_comb_table == 0] = "-"
         temp = np.zeros(self.foundment_values.shape, dtype=str)  # purity of dtype
@@ -230,18 +229,28 @@ class Epistatic(_EA, _EB):
         """
         this is the first function that will permit to find possible combinations between mutqnts.
         This one is useful to find double mutqnts. For exqmple [+ - + -] and [- + - +].
-        :param foundment_values:
+        Returns a list of tuples of
+
+        * +-+ as a 1,0 list and the combination
+
+        [([1, 1, 0, 0], (2, 3)), ([1, 0, 1, 0], (2, 4)),
+
+        :param foundment_values: 2D array of + - +
         :return:
         """
         # I don't know why but this method alters foundment_values, which may not be intended? MF
         # actually this makes a shallow copy... so  shmeh
-        foundment_values = self.foundment_values
+        foundment_values = self.foundment_values ## 2D array of + - +
         additivity_list = []
         # foundment_values is a np.array of 1/0. however, user may have given a +/-
-        if foundment_values.dtype == np.dtype('<U1'): # formerly: np.any(foundment_values == '+') (FutureWarning)
+        if foundment_values.dtype == np.dtype('<U1') or foundment_values.dtype == np.dtype('object'):
+            # formerly: np.any(foundment_values == '+') (FutureWarning)
             foundment_values[foundment_values == "+"] = 1
             # here I change the + and - for 1 and 0. This is useful for calculations
             foundment_values[foundment_values == "-"] = 0
+        else:
+            pass
+            #print('Not +-', foundment_values.dtype)
         i = 1
         while i < len(foundment_values) - 1:  # I go through the sign mqtrix
             j = i
