@@ -49,6 +49,7 @@ class Powersetplot {
 
     appendTo(divElement) { // "#" + mode + "-graph-plot"
         d3.select(divElement).append(() => this.svg.node());
+        this.correctSVG(divElement);
         return this;
     }
 
@@ -225,18 +226,18 @@ class Powersetplot {
         group.append("circle")
             .attr("cx", datapoint.x)
             .attr("cy", datapoint.y)
-            .attr("r", datapoint.v_sd)
+            .attr("r", datapoint.v_sd > 0 ? datapoint.v_sd : 0.001)
             .style("fill", datapoint.color_sd);
         group.append("circle")
             .attr("cx", datapoint.x)
             .attr("cy", datapoint.y)
-            .attr("r", datapoint.v)
+            .attr("r", datapoint.v > 0 ? datapoint.v : 0.001)
             .style("fill", datapoint.color);
         if (this.mode === 'theo') {
             group.append("circle")
                 .attr("cx", datapoint.x)
                 .attr("cy", datapoint.y)
-                .attr("r", datapoint.v_e)
+                .attr("r", datapoint.v_e > 0 ? datapoint.v_e : 0.001)
                 .style("stroke", "black")
                 .style("stroke-width", "1")
                 .style("fill", "none")
@@ -417,6 +418,22 @@ class Powersetplot {
         }
 
         }
+
+    correctSVG(divElement) {
+        //viewBox="0 0 1000 1500"
+        let size = [0,0, 0, 0];
+        d3.selectAll(`${divElement} circle`).each(function(d) {
+            const target = d3.select(this);
+            size = [
+                Math.min(size[0], target.attr('cx')),
+                Math.min(size[1], target.attr('cy')),
+                Math.max(size[2], target.attr('cx')),
+                Math.max(size[3], target.attr('cy'))
+            ];
+        });
+        d3.selectAll(`${divElement} svg`).attr('viewBox', `${size[0]-20} ${size[1]-20} ${size[2]+20} ${size[3]+250}`)
+
+    }
 
 }
 
