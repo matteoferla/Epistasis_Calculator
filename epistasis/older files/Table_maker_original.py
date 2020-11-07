@@ -272,7 +272,6 @@ def theoretical_stats_conversion(mean_and_sd_dic, final_comb_table, combs_only, 
                         value = value - avgWT
                         new_target.append(value)
                     replicate_values = numpy.add(replicate_values,new_target)
-                    print(replicate_values)
                 good_one = list(theor_mean)[0]
                 good_one = avgWT+good_one
                 theor_sd = (numpy.std(replicate_values))/math.sqrt(replicate_number)

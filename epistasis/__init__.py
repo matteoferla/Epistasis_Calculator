@@ -89,7 +89,6 @@ class Epistatic(_EA, _EB):
         # I made a copy of it as it was a fishy piece of code,
         # so no reconversion needed.
         self.final_comb_table = np.c_[reshaped_signs, reshaped_combs] #.astype('object')
-        print(self.final_comb_table)
         self.final_comb_table[self.final_comb_table == 1] = "+"
         self.final_comb_table[self.final_comb_table == 0] = "-"
         temp = np.zeros(self.foundment_values.shape, dtype=str)  # purity of dtype
