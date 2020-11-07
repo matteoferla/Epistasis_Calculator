@@ -222,7 +222,7 @@
 </div>
 
     <div class="modal fade" tabindex="-1" id="zeroWTModal">
-  <div class="modal-dialog">
+  <div class="modal-dialog modal-lg">
     <div class="modal-content">
       <div class="modal-header">
         <h5 class="modal-title">Data centering</h5>
