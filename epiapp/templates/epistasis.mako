@@ -13,13 +13,10 @@
 
     </h3>
     <div class="card-body" id="intro">
-        <p>Combining different mutations into the same variant often does not result in an additive effect,
-            instead the mutations can antagonise or synergise, a phenomenon called epistasis.</p>
-        <p>This tool calculates the epistatic effect different mutations have on a structure.</p>
-        <p>This site accepts two ways of inputting the data. The default is by generating
-            and filling out a table online, the second is by generating and filling
-            out an Excel spreadsheet and uploading it.</p>
-        <p>Cases with a single replicated are accepted. Leave a replicate blank if missing.</p>
+        <p>Combining different mutations into the same variant often does not result in an additive effect, instead the mutations can antagonise or synergise, a phenomenon called epistasis.</p>
+        <p>This tool calculates the epistatic effect different mutations can have on a protein structure.</p>
+        <p>For example, if a mutant has 3 mutations, there are different combinations possible: Three single mutants and three double mutants. The creation of these 6 mutants as well as the parent protein and triple mutant make a total of 8 mutants. This would result in a complete dataset (full deconvolution of a triple mutant). Alternatively, it is not necessary to deconvolute all mutations from a multi-mutational variant, since this would be very time consuming. Instead, it is possible to include different subsets of mutations in double, triple, quadruple or nth mutants.</p>
+        <p>In either case, this site accepts two ways of inputting the data. The default is by generating and filling out a table online, the second is by generating and filling out an Excel spreadsheet and uploading it. The data can be in various replicates. Cases with a single replicated are accepted. Leave a replicate blank if missing.</p>
     </div>
 </div>
 <br>
@@ -151,8 +148,13 @@
                 </div>
             </div>
             <div class="col-xl-7 col-xl-12 col-lg-12">
-                <input type="file" id="file_upload"
+                <div class="form-group">
+                    <label for="file_upload">Upload Excel spreadsheet</label>
+                    <input type="file" id="file_upload" class="form-control-file"
                        accept=".csv, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel">
+                  </div>
+
+
             </div>
             <div class="col-xl-6 offset-md-2">
                 <br>
@@ -229,8 +231,31 @@
         </button>
       </div>
       <div class="modal-body">
-        <p>For certain types of dataset it is important to make sure that the data is shifted to making the wild type average is zero.
-        For selectivity this is not required, however it is for conversion.
+
+
+          <p>For certain types of dataset it is important to make sure that the data is shifted to making the wild type average is zero.</p>
+          <p>
+        Note that there are different equations for quantifying epistatic effects (see below). For certain types of dataset it is important to make sure that the data is shifted to making the wild type average is zero. For selectivity (in kJ/mol or kcal/mol) this is not required, however, it is for any values given in percentage (e.g., conversion).
+          </p><p>
+
+        This tool also allows to determine epistatic effects for these parameters, as reported for cytochrome P450 in the related paper:
+         </p><p>
+          <ul>
+          <li> Selectivity in kJ/mol or kcal/mol</li>
+          <li>Conversion of substrate to product (%)</li>
+          <li>Product formation rate (PFR) in µmol products / µmol enzyme x 1 / min</li>
+          <li>NADPH consumption rate (NCR) in µmol NADPH / µmol enzyme x 1 / min</li>
+          <li>Coupling efficiency (CE) in percentage (%)</li>
+          <li>Total turnover number (TTN) in µmol products / µmol enzyme</li>
+          <li>Total turnover frequency (TTF) in µmol products / µmol enzyme x 1 / min</li>
+      </ul>
+          <p>Other studies used different equations for the following parameters:</p>
+          <ul>
+              <li>Weinreich 2006: MIC concentrations of antibiotics in µg/mL</li>
+              <li>Shakhnovich 2016: Turnover in kcat-1; Binding in Km; Catalytic efficiency in kcat/Km</li>
+              <li>Dalby 2018: Tagg in °C; Tm in °C</li>
+          </ul>
+        <p>For some of the cases above, there are also demos/examples.
         </p>
       </div>
       <div class="modal-footer">
