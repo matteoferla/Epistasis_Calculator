@@ -9,5 +9,11 @@
   {"file": "kCat_over_km.xlsx", "zero": true, "replicates": 1, "mutants": 3,
     "brief": "k_cat/K_M from Weinreich et al. 2006"},
   {"file": "Temperatures.xlsx", "zero": true, "replicates": 1, "mutants": 4,
-    "brief": "Temperatures from Weinreich et al. 2006"}
+    "brief": "Temperatures from Weinreich et al. 2006"},
+  {"file": "Meini_2015_Temperature.xlsx", "zero": true, "replicates": 1, "mutants": 3,
+    "brief": "Temperatures from Meini et al. 2015"},
+  {"file": "Meini_2015_Pennicilin kcat.xlsx", "zero": true, "replicates": 1, "mutants": 3,
+    "brief": "Turnover number from Meini et al. 2015"},
+  {"file": "Meini_2015_Imipenem_KM.xlsx", "zero": true, "replicates": 1, "mutants": 3,
+    "brief": "Michaelis constant from Meini et al. 2015"}
 ]
