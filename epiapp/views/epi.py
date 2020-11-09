@@ -96,14 +96,14 @@ class Epistaticizer:
             downbutton = '<a class="btn btn-primary" href="/download" download="epistasis_results.xlsx">Download</a>'
             theolegend = 'Graph of the expanded powerset of the mutations. ' + \
                         'The filled circle width correlates with theoretical average. '+\
-                        'The grey halo around the filled circle is it s standard error. '+\
+                        'The grey halo around the filled circle is its standard error. '+\
                         'The outlined circle width correlates with empirical average. '+\
                         drag
             theotab = tabcont.format(set='theo', table=theo, graph=graph.format('theo',
                                                                                 theolegend))
             emplegend = 'Graph of the powerset of the mutants.' + \
                         'The circle width correlates with theoretical average. '+\
-                        'The lighter halo around the circle is it s standard error. '+\
+                        'The lighter halo around the circle is its standard error. '+\
                         drag
             emptab = tabcont.format(set='emp', table=emp, graph=graph.format('emp',
                                                                              emplegend))
@@ -218,19 +218,21 @@ class Epistaticizer:
         reporoot = os.path.split(epiappfolder)[0]
         demofolder = os.path.join(reporoot, 'demo')
         with open(os.path.join(demofolder, 'demo.json'), 'r') as w:
-            demo_metadata = {entry['file']: entry for entry in json.load(w)}
-            # this has extensions
+            demo_metadata = json.load(w)
+        # read
+        for metadata in sorted(demo_metadata, key=lambda metadata: metadata['rank']):
+            try:
+                filename = metadata['file']
+                name, extension = os.path.splitext(filename)
+                cls.demo_data[name] = cls.parse_demo(os.path.join(demofolder, filename), metadata)
+                log.info(f'Demo dataset {filename} loaded')
+            except Exception as error:
+                log.error(f'Demo dataset {filename} failed to load. {error.__class__.__name__}: {error}')
+        # verify nobody left behind!
         for filename in os.listdir(demofolder):
             name, extension = os.path.splitext(filename)
-            if extension == '.xlsx':
-                try:
-                    metadata = demo_metadata[filename]
-                    cls.demo_data[name] = cls.parse_demo(os.path.join(demofolder, filename), metadata)
-                    log.info(f'Demo dataset {filename} loaded')
-                except Exception as error:
-                    log.error(f'Demo dataset {filename} failed to load. {error.__class__.__name__}: {error}')
-            else:
-                pass # not a table.
+            if extension == '.xlsx' and '$' not in name and name not in cls.demo_data:
+                log.critical(f'File {filename} has no metadata!')
 
     @classmethod
     def parse_demo(cls, filepath, metadata: Dict[str, Dict[str, Union[str, int]]]) -> Dict[str, List[float]]:
