@@ -38,19 +38,23 @@ Please see the docstrings in the methods for more info.
 The original functionality of the script is retained as the class method `user_input` which will ask for input.
 The altered usage has a way of creating the scheme thusly:
     
-    Epistatic.create_input_scheme('C', '3', '3', 'test.xlsx')
+    epi = Epistatic.create_input_scheme('C', '3', '3', 'test.xlsx')
     
 Running from file and calculating and saving:
 
-    Epistatic.from_file('C', 'raw.xlsx').calculate().save('wow.xlsx')
+    epi = Epistatic.from_file('C', 'raw.xlsx').calculate().save('wow.xlsx')
 
 Running from panda table:
 
-    Epistatic.from_pandas('C',table)
+    epi = Epistatic.from_pandas('C',table)
     
 Running from values:
 
-    Epistatic(your_study, mutation_number,replicate_number,replicate_list,mutations_list, mutant_list,foundment_values,data_array,replicate_matrix)
+    epi = Epistatic(your_study, mutation_number,replicate_number,replicate_list,mutations_list, mutant_list,foundment_values,data_array,replicate_matrix)
+
+To do the actual calculations...
+
+    epi.calculate()
 
 In addition to saving an Excel file, one can get the data as dataframes
 

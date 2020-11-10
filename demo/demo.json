@@ -16,7 +16,7 @@
     "brief": "Turnover number from Meini et al. 2015"},
   {"file": "Meini_2015_Imipenem_KM.xlsx", "zero": true, "replicates": 1, "mutants": 3, "rank": 2,
     "brief": "Michaelis constant from Meini et al. 2015"},
-  {"file": "kcat_over_KM_for_NADPH_by_FDH.xlsx", "zero": true, "replicates": 1, "mutants": 5, "rank": 3,
+  {"file": "kcat_over_KM_for_NADPH_by_FDH.xlsx", "zero": true, "replicates": 1, "mutants": 4, "rank": 3,
     "brief": "Catalytic efficiency to NADPH (kcat/Km) by formate dehydrogenase (Calzadiaz 2020; partial deconvolution)"}
 ]
 
