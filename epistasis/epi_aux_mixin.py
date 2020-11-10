@@ -122,17 +122,22 @@ class EpiAuxMixin(EpiBaseMixin):
                    data_array=data_array,
                    replicate_matrix=replicate_matrix)
 
-    ##### Other methods
-    def save(self, outfile='out.xlsx'):
+    @property
+    def theoretical_results(self):
         suppinfo = ["Combinations", "Experimental average", "Experimental standard deviation", "Thoretical average",
                     "Theoretical standard deviation", "Exp.avg - Theor.avg", "Epistasis type"]
+        return pd.DataFrame(self.all_of_it, columns=self.mutations_list + suppinfo, index=self.comb_index)
 
-        excel_table2 = pd.DataFrame(self.all_of_it, columns=self.mutations_list + suppinfo, index=self.comb_index)
-        excel_table3 = pd.DataFrame(self.foundment_values,
+    @property
+    def experimental_results(self):
+        return pd.DataFrame(self.foundment_values,
                                         columns=self.mutations_list + ["Average", "Standard deviation"],
                                         index=self.mutant_list)
+
+    ##### Other methods
+    def save(self, outfile='out.xlsx'):
         writer2 = pd.ExcelWriter(outfile)
-        excel_table2.to_excel(writer2, sheet_name="Theoretical results table", index=True)
-        excel_table3.to_excel(writer2, sheet_name="Experimental results table", index=True)
+        self.theoretical_results.to_excel(writer2, sheet_name="Theoretical results table", index=True)
+        self.experimental_results.to_excel(writer2, sheet_name="Experimental results table", index=True)
         writer2.close()
         # and here are the lines to write the final excel table ! THe final file has two sheet, one with all the values and combinations, and the other with the experimental values only and the single mutants.

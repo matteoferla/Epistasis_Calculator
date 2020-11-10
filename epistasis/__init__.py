@@ -25,6 +25,7 @@ class Epistatic(_EA, _EB):
     Running from values:
                 Epistatic(your_study, mutation_number,replicate_number,replicate_list,mutations_list, mutant_list,foundment_values,data_array,replicate_matrix)
             Methods:
+
             * create_combination
             * mean_and_sd_maker
             * origin_finder
@@ -33,9 +34,12 @@ class Epistatic(_EA, _EB):
             * theoretical_stats
             * value_list_sorter
             * what_epistasis_sign
+
             Class method: user_input for interactive input. (no parameters! `Epistasis.user_input()`)
             Attributes:
             TODO
+
+    The output can be accessed via .theoretical_results and .experimental_results pandas dataframes.
     """
 
     # ============== Central method ====================================================================================

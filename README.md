@@ -50,7 +50,14 @@ Running from panda table:
     
 Running from values:
 
-            Epistatic(your_study, mutation_number,replicate_number,replicate_list,mutations_list, mutant_list,foundment_values,data_array,replicate_matrix)
+    Epistatic(your_study, mutation_number,replicate_number,replicate_list,mutations_list, mutant_list,foundment_values,data_array,replicate_matrix)
+
+In addition to saving an Excel file, one can get the data as dataframes
+
+    epi.save('wow.xlsx')
+    epi.experimental_results #pandas dataframe
+    epi.theoretical_results #pandas dataframe
+       
 
 The attributes are:
 
