@@ -131,8 +131,8 @@ class EpiAuxMixin(EpiBaseMixin):
     @property
     def experimental_results(self):
         return pd.DataFrame(self.foundment_values,
-                                        columns=self.mutations_list + ["Average", "Standard deviation"],
-                                        index=self.mutant_list)
+                            columns=self.mutations_list + ["Average", "Standard deviation"],
+                            index=self.mutant_list)
 
     ##### Other methods
     def save(self, outfile='out.xlsx'):
@@ -140,4 +140,6 @@ class EpiAuxMixin(EpiBaseMixin):
         self.theoretical_results.to_excel(writer2, sheet_name="Theoretical results table", index=True)
         self.experimental_results.to_excel(writer2, sheet_name="Experimental results table", index=True)
         writer2.close()
-        # and here are the lines to write the final excel table ! THe final file has two sheet, one with all the values and combinations, and the other with the experimental values only and the single mutants.
+        # and here are the lines to write the final excel table !
+        # THe final file has two sheet, one with all the values and combinations,
+        # and the other with the experimental values only and the single mutants.

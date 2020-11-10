@@ -9,7 +9,7 @@ import math, random
 from .epi_aux_mixin import EpiAuxMixin as _EA
 from .epi_base_mixin import EpiBaseMixin as _EB
 
-from typing import List
+from typing import List, Tuple, Union, Dict, Iterable
 
 
 class Epistatic(_EA, _EB):
@@ -49,12 +49,12 @@ class Epistatic(_EA, _EB):
             raise AssertionError('No data')
 
         # This function gives a tuple (dictionary of mutants associated with mean and std, array of mean and std)
-        self.mean_and_sd_dic = self.mean_and_sd_maker()[0]
+        self.mean_and_sd_dic, array_mean_and_sd = self.mean_and_sd_maker()
         # here we just take the first element of the tuple,
         # which is the dictionarry. I frankly don't even remember why I did a tuple and not just the dictionary but hey)
         # line with Mutant_number
         # self.mean_and_sd_array = np.reshape(self.mean_and_sd_maker(data_array)[1], ((Mutant_number), 2))
-        self.mean_and_sd_array = np.reshape(self.mean_and_sd_maker()[1], (len(self.create_combination()), 2))
+        self.mean_and_sd_array = np.reshape(array_mean_and_sd, (len(self.create_combination()), 2))
         origins = self.origin_finder()
         all_combinations = self.please_more_combinations(origins)
         # ## here will be made the combinations table
@@ -81,7 +81,7 @@ class Epistatic(_EA, _EB):
         reshaped_signs = np.reshape(signs_only, ((len(signs_only), (len(self.mutations_list)))))
         # in the case of 2 mutants only the math needs a hack or (2,1) => (1,1) fails. MF
         # reshaped_combs normally is a np.array of tuples... but gets cast "incorrectly" when there's only one.
-        if len(signs_only) != 1: # more than 2
+        if len(signs_only) != 1:  # more than 2
             reshaped_combs = np.reshape(self.combs_only, (len(signs_only), 1))
         else:
             reshaped_combs = np.zeros((1, 1)).astype(object)
@@ -92,7 +92,7 @@ class Epistatic(_EA, _EB):
         # so a method (the origin one) was altering foundament and here is reverted.
         # I made a copy of it as it was a fishy piece of code,
         # so no reconversion needed.
-        self.final_comb_table = np.c_[reshaped_signs, reshaped_combs] #.astype('object')
+        self.final_comb_table = np.c_[reshaped_signs, reshaped_combs]  # .astype('object')
         self.final_comb_table[self.final_comb_table == 1] = "+"
         self.final_comb_table[self.final_comb_table == 0] = "-"
         temp = np.zeros(self.foundment_values.shape, dtype=str)  # purity of dtype
@@ -100,19 +100,16 @@ class Epistatic(_EA, _EB):
         temp[self.foundment_values == 0] = "-"  # reconverting all 1 and 0 into + and -
         self.foundment_values = np.c_[temp, self.mean_and_sd_array]
         # we also add the averages and standard deviation (experimental) to the sign matrix
-
         # this time for conversion, which is a little different albeit very close.
-
         # the "selectivity" or "conversion" difference (self.your_study) is handled now by the avgWT dyn property
-        all_of_it = self.theoretical_stats()
-        epistasis = self.what_epistasis_sign(all_of_it)
-        self.all_of_it = np.c_[all_of_it, epistasis]
+        self.stats = self.get_theoretical_stats()  # List[Dict[str, Union[str, float]]]
         # this all_of_it value is all the data we need, across the program we complete it as it goes
         return self
 
     # ============== property methods ==================================================================================
 
-    _avgWT = None # cached property
+    _avgWT = None  # cached property
+
     @property
     def avgWT(self):
         # avgWT is zero for selectivity.
@@ -121,11 +118,16 @@ class Epistatic(_EA, _EB):
         elif self.your_study == 'S':
             self._avgWT = 0
         elif self.your_study == 'C':
-            WT = list(self.mean_and_sd_dic.keys())[0]  # This seems dangerous
-            self._avgWT = self.mean_and_sd_dic[WT][0]
+            self._avgWT = self.mean_and_sd_dic[self.WT][0]
         else:
             raise ValueError
         return self._avgWT
+
+    @property
+    def WT(self):
+        WT = '-' * self.mutation_number
+        assert WT in self.mean_and_sd_dic, 'Please fill in WT or make a mutant the WT and remove datapoints without it.'
+        return WT
 
     # ============== Dependant methods =================================================================================
 
@@ -213,19 +215,19 @@ class Epistatic(_EA, _EB):
         """
         data_dic = {}
         mean_and_sd = []
-        for array in self.data_array:
+        for array in self.data_array: #[ 0. 0. 0. 40.408327 37.176372 35.776619]
             data = array[self.mutation_number:]
             data_float = np.array(data).astype(np.float64)
-            mutant = str(array[:self.mutation_number])
+            mutant = self.strigify(array[:self.mutation_number])
             average = float(np.nanmean(data_float))
             N_replicates = np.count_nonzero(~np.isnan(data_float))
-            if N_replicates: # non-empty row.
+            if N_replicates:  # non-empty row.
                 std = float(np.nanstd(data_float)) / math.sqrt(N_replicates)
                 data_dic[mutant] = [average, std]
             else:
                 data_dic[mutant] = [np.nan, np.nan]
-        for elt in data_dic.values():
-            mean_and_sd.append(elt)
+        for row in data_dic.values():
+            mean_and_sd.append(row)
         return data_dic, mean_and_sd
 
     def origin_finder(self):
@@ -243,7 +245,7 @@ class Epistatic(_EA, _EB):
         """
         # I don't know why but this method alters foundment_values, which may not be intended? MF
         # actually this makes a shallow copy... so  shmeh
-        foundment_values = self.foundment_values ## 2D array of + - +
+        foundment_values = self.foundment_values  ## 2D array of + - +
         additivity_list = []
         # foundment_values is a np.array of 1/0. however, user may have given a +/-
         if foundment_values.dtype == np.dtype('<U1') or foundment_values.dtype == np.dtype('object'):
@@ -253,7 +255,7 @@ class Epistatic(_EA, _EB):
             foundment_values[foundment_values == "-"] = 0
         else:
             pass
-            #print('Not +-', foundment_values.dtype)
+            # print('Not +-', foundment_values.dtype)
         i = 1
         while i < len(foundment_values) - 1:  # I go through the sign mqtrix
             j = i
@@ -309,142 +311,110 @@ class Epistatic(_EA, _EB):
                 final_comb_list)  # and we repeat the function for the final cycle but with the final list as a variable
         return final_comb_list
 
-    def theoretical_stats(self) -> np.ndarray:
+    def get_theoretical_stats(self) -> List[Dict[str, Union[str, float]]]:
         """
         the function above calculates the theoretical average and standard deviations based on the article that Carlos
         and his colleagues have written.
 
         This is a refactored method based on the observation that avgWT was the only difference.
 
-        :return: np.ndarray
         """
-        grand_final = []
-        all_of_it = []
-        # this operation, which I am not sure why it is needed, was repeated  - MF
-        strigify = lambda table: str(table).replace('0', '-')\
-                                           .replace('1', '+')\
-                                           .replace('.', '')\
-                                           .replace("'", "")\
-                                           .replace("'", "")\
-                                           .replace(" ","")
+        data = []
         # =========================================
-        for elt in self.final_comb_table:
-            # elt is np.ndarray: ['+' '+' '-' (2, 3)] to which stuff gets added...
+        for combination_row in self.final_comb_table:
+            # combination_row is np.ndarray: ['+' '+' '-' (2, 3)] to which stuff gets added...
+            signage = list(combination_row[:self.mutation_number])  # list +, -, +
+            combination = combination_row[self.mutation_number]  # (2,3)
             # ======== Empirical
-            for elt2 in self.mean_and_sd_dic.keys(): # this is np.array of +/- in binary style
-                if self.verbose: # present in conversion only
-                    print(strigify(elt[:self.mutation_number]), strigify(elt2))
-                if strigify(elt[:self.mutation_number]) == strigify(elt2):
-                    elt = np.append(elt, list(self.mean_and_sd_dic[elt2]))
-                    if self.verbose:
-                        print('MATCH')
-                    break
-            else:
-                raise ValueError('Experimental values could not be calculated because of odd +/- format')
+            emp_mean, emp_se = self._get_empirical_for_signage(signage)
             # ======== Theoretical
-            for elt3 in self.combs_only:
-                if np.array_equal(elt[len(self.mutations_list)], elt3) == True:
-                    theor_mean = np.array([0])
-                    replicate_values = np.zeros((1, len(self.replicate_matrix[0])))
-                    for elt4 in elt3:
-                        target = self.mean_and_sd_array[elt4 - 1][0] - self.avgWT # avgWT is 0 for S
-                        target2 = self.replicate_matrix[elt4 - 1]
-                        theor_mean = np.add(theor_mean, target)
-                        replicate_values = np.add(replicate_values, target2)
-                        # the following is new_target == target2 for argWT == 0
-                        new_target = []
-                        for value in target2:
-                            value = value - self.avgWT
-                            new_target.append(value)
-                        replicate_values = np.add(replicate_values, new_target)
-                    good_one = list(theor_mean)[0]
-                    good_one = self.avgWT + good_one
-                    # the following ratio  is for sterr.
-                    # The rooted part (N_replicates) is == len(replicates) if no nans present.
-                    N_replicates = np.count_nonzero(~np.isnan(replicate_values.astype(np.float64)))
-                    if N_replicates > 0:
-                        theor_sd = (np.nanstd(np.array(replicate_values, dtype=np.float64))) / math.sqrt(N_replicates)
-                        # NB. Blind refactoring: list(theor_mean) in S, good_one in C. Different types??
-                    else:
-                        theor_sd = np.nan
-                    elt = np.append(elt, good_one)
-                    elt = np.append(elt, theor_sd)
-                    grand_final.append(elt)
-                    # elt is a numpy.ndarray row ['+' '+' '+' (4, 5) 68.4 4.4 30.40 4.0]
-                    # grand_final is a table
-        if self.verbose:
-            print('mutationlist', self.mutations_list)
-            print('grand_final', grand_final)
-        # =========================================
-        for elt5 in grand_final:
-            # ['+' '+' '-' (2, 3) 1.0 0.0]
-            at_last = (elt5[len(self.mutations_list) + 1:][0]) - (elt5[len(self.mutations_list) + 1:][2])
-            elt5 = np.append(elt5, at_last)
-            all_of_it.append(elt5)
-        return np.array(all_of_it)
+            theor_mean, theor_se = self._get_theoretical_for_combination(combination)
+            # ======== store
+            data.append({'signage': signage,
+                         'combination': combination,
+                         'emp_mean': emp_mean,
+                         'emp_sd': emp_se,
+                         'theor_mean': theor_mean,
+                         'theor_sd': theor_se,
+                         'diff': emp_mean - theor_mean,
+                         'type': self.get_epistasis_sign(emp_mean, emp_se, theor_mean, theor_se, combination)
+                         }
+                        )
+            # final_row was a numpy.ndarray row ['+' '+' '+' (4, 5) 68.4 4.4 30.40 4.0]
+            # now it is a list of dict
+            # grand_final is a table
+            if self.verbose:
+                print('mutationlist', self.mutations_list)
+                print('grand_final', data)
+            # =========================================
+        return data
 
-    def what_epistasis_sign(self, all_of_it: np.ndarray) -> List[str]:
-        # all_of_it is [['+' '+' (2, 3) 0.3012075249147169 0.040928361771436335
-        #   1.0081247600527092 0.39022923215371047 -0.7069172351379923]]
-        sign = []
-        epi_list = []
-        what_epi = []
-        i = 0
-        for row in all_of_it:
-            noinspi = row[len(self.mutations_list) + 1:]
-            Gexp = noinspi[0] - self.avgWT
-            Gexpstd = noinspi[1]
-            Gcomb = noinspi[2] - self.avgWT
-            Gcombstd = noinspi[3]
-            GexpES = Gexp - Gexpstd
-            GcombES = Gcomb + Gcombstd
-            GexpES2 = Gexp + Gexpstd
-            GcombES2 = Gcomb - Gcombstd
-            if GexpES < GcombES and Gexp > Gcomb:
-                sign.append("Additive")
-            elif GexpES2 > GcombES2 and Gexp < Gcomb:
-                sign.append("Additive")
-            elif Gexp < Gcomb:
-                sign.append("- ")
-            elif Gexp > Gcomb:
-                sign.append("+ ")
-            else:
-                sign.append("= ")
-        for elt2 in self.combs_only:
-            combavg = []
-            for lign in all_of_it:
-                if lign[len(self.mutations_list)] == elt2:
-                    double_mutant_avg = lign[len(self.mutations_list) + 1]
-            for elt3 in elt2:
-                mutant_avg = self.replicate_matrix[elt3 - 1] - self.avgWT
-                mutant_avg = float(np.nanmean(np.array(mutant_avg, dtype=np.float64)))
-                combavg.append(mutant_avg)
-            count = 0
-            for avg in combavg:
-                if avg < 0:
-                    count = count - 1
-                elif avg > 0:
-                    count = count + 1
-                else:
-                    pass
-            if abs(count) == len(combavg):
-                if count > 0 and double_mutant_avg > 0 or count < 0 and double_mutant_avg < 0:
-                    epi_list.append("Magnitude epistasis")
-                elif count > 0 and double_mutant_avg < 0 or count < 0 and double_mutant_avg > 0:
-                    epi_list.append("Reciprocal sign epistasis")
-                else:
-                    epi_list.append("Insufficient data")
-            elif abs(count) != len(combavg):
-                epi_list.append("Sign epistasis")
-            else:
-                raise ValueError('No idea. Unterminated if statement. MF')
-        # end of combo_only loop
-        while i < len(sign):
-            if sign[i] != "Additive":
-                what_epi.append(sign[i] + epi_list[i])
-            else:
-                what_epi.append(sign[i])
-            i = i + 1
-        return what_epi
+    def get_epistasis_sign(self, emp_mean, emp_se, theor_mean, theor_se, combination) -> str:
+        nor_emp_mean = emp_mean - self.avgWT
+        nor_theor_mean = theor_mean - self.avgWT
+        emp_lower = nor_emp_mean - emp_se  # GexpES
+        emp_upper = nor_emp_mean + emp_se  # GexpES2
+        theor_upper = nor_theor_mean + theor_se  # GcombES
+        theor_lower = nor_theor_mean - theor_se  # GcombES2
+        if nor_emp_mean >= nor_theor_mean and emp_lower <= theor_upper:
+            return "Additive"  # no significant epistasis
+        elif nor_emp_mean <= nor_theor_mean and emp_upper >= theor_lower:
+            return "Additive"  # no significant epistasis
+        elif nor_emp_mean < nor_theor_mean:
+            sign = "-"
+        elif nor_emp_mean > nor_theor_mean:
+            sign = "+"
+        else:
+            sign = "Impossible"  # this is not correct.
+        positivity = 0
+        for parent in combination:  # elt3 in elt2:
+            parent_signage = list(self.mean_and_sd_dic.keys())[parent - 1]
+            positivity += 1 if self.mean_and_sd_dic[parent_signage][0] > 0 else -1
+        if abs(positivity) != len(combination):
+            return f"{sign} Sign epistasis"
+        elif (positivity > 0 and nor_emp_mean > 0) or (positivity < 0 and nor_emp_mean < 0):
+            return f"{sign} Magnitude epistasis"
+        elif (positivity > 0 and nor_emp_mean < 0) or (positivity < 0 and nor_emp_mean > 0):
+            return f"{sign} Reciprocal sign epistasis"
+        else:
+            return "Insufficient data"
 
+    def strigify(self, signage: Iterable) -> str:
+        # [+,-,+] = +-+
+        # this operation, which I am not sure why it is needed, was repeated  - MF
+        convert = lambda value: value if isinstance(value, str) else ('-', '+')[int(value)]
+        return (''.join([convert(x)  for x in signage]).replace('0', '-')
+                .replace('–', '-')  # en dash
+                .replace('–', '-')  # em dash
+                .replace('1', '+')
+                .replace(',', '')
+                .replace('.', '')
+                .replace("'", "")
+                .replace("'", "")
+                .replace(" ", ""))
 
+    def _get_empirical_for_signage(self, signage):
+        clean_signage = self.strigify(signage)
+        if clean_signage in self.mean_and_sd_dic:
+            return list(self.mean_and_sd_dic[clean_signage])
+        else:
+            raise ValueError(f'Experimental values could not be calculated because of odd +/- format ({signage} --> {clean_signage})')
+
+    def _get_theoretical_for_combination(self, combination: Tuple[int]):
+        # So the theoretical mean/sd is the sum of the benefits of each
+        # this is not quite correct.
+        parent_replicates = np.zeros((1, len(self.replicate_matrix[0])))
+        # But isn't len(self.replicate_matrix[0]) simply 2^self.mutation_number?
+        for parent in combination:
+            parent_replicates += self.replicate_matrix[parent - 1] - self.avgWT  # np elementwise
+        # the following ratio  is for sterr.
+        # The rooted part (N_replicates) is == len(replicates) if no nans present.
+        parent_replicates = parent_replicates.astype(np.float64)
+        N_replicates = np.count_nonzero(~np.isnan(parent_replicates))
+        theor_mean = np.nansum(parent_replicates) + self.avgWT
+        if N_replicates > 0:
+            theor_sd = (np.nanstd(parent_replicates) / math.sqrt(N_replicates))
+            # NB. Blind refactoring: list(theor_mean) in S, good_one in C. Different types??
+        else:
+            theor_sd = np.nan
+        return theor_mean, theor_sd

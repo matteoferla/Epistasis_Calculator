@@ -63,10 +63,14 @@ class EpiBaseMixin:
         # =============================== Preallocation
         self.mean_and_sd_dic = None
         self.mean_and_sd_array = None
-        self.all_of_it = None
         self.final_comb_table = None
         self.combs_only = None
         self.comb_index = None
+        self.stats = []
+
+    @property
+    def all_of_it(self):
+        return np.array([[*stat['signage'], *[stat[key] for key in stat if key != 'signage']] for stat in self.stats])
 
     def calculate(self):
         raise NotImplementedError('This is an abstract method.')
