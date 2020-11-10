@@ -235,15 +235,10 @@ class Epistaticizer:
                 log.critical(f'File {filename} has no metadata!')
 
     @classmethod
-    def parse_demo(cls, filepath, metadata: Dict[str, Dict[str, Union[str, int]]]) -> Dict[str, List[float]]:
+    def parse_demo(cls, filepath, metadata: Dict[str, Union[str, int]]) -> Dict[str, Union[str, int]]:
         """
-        called by ``load_demo_data`` to do the actual reading
-        Args:
-            filepath:
-            metadata:
-
-        Returns:
-
+        called by ``load_demo_data`` to do the actual reading.
+        Actually modifies metadata dict.
         """
         df = pd.read_excel(filepath)
         name = df.columns[0]
@@ -256,7 +251,7 @@ class Epistaticizer:
         metadata['data'] = dict(zip(df.signname, df.comboreplicates))
         metadata['mutation_names'] = list(mutation_names)
         metadata['replicate_names'] = list(replicate_names)
-        return metadata
+        return metadata # to get assigned to `cls.demo_data`
 
 
 

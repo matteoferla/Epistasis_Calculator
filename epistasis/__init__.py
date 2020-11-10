@@ -268,8 +268,10 @@ class Epistatic(_EA, _EB):
 
     def please_more_combinations(self, origins):
         """
-        now is probably the trickiest function I had to do. The code above works for double mutants but not for triple, quadruple etc...
-        The idea is that I use recurcivity to obtain new combinations
+        now is probably the trickiest function I had to do.
+        The code above works for double mutants but not for triple, quadruple etc...
+        The idea is that I use recursivity to obtain new combinations
+
         :param origins:
         :param foundment_values:
         :return:
