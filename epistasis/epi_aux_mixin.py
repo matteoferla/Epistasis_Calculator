@@ -124,8 +124,8 @@ class EpiAuxMixin(EpiBaseMixin):
 
     @property
     def theoretical_results(self):
-        suppinfo = ["Combinations", "Experimental average", "Experimental standard deviation", "Thoretical average",
-                    "Theoretical standard deviation", "Exp.avg - Theor.avg", "Epistasis type"]
+        suppinfo = ["Combinations", "Experimental average", "Experimental standard error", "Theoretical average",
+                    "Theoretical standard error", "Exp.avg - Theor.avg", "Epistasis type"]
         return pd.DataFrame(self.all_of_it, columns=self.mutations_list + suppinfo, index=self.comb_index)
 
     @property

@@ -3,6 +3,7 @@ __version__ = '1.3'
 __date__ = '3 Sept 2020'
 
 import numpy as np
+#from scipy.stats import ttest_ind_from_stats as ttest
 from warnings import warn
 import math, random
 
@@ -356,6 +357,11 @@ class Epistatic(_EA, _EB):
         emp_upper = nor_emp_mean + emp_se  # GexpES2
         theor_upper = nor_theor_mean + theor_se  # GcombES
         theor_lower = nor_theor_mean - theor_se  # GcombES2
+        # t,pvalue = ttest(mean1=nor_emp_mean, std1=emp_se * np.sqrt(self.replicate_number), nobs1=self.replicate_number,
+        #                  mean2=nor_theor_mean, std2=theor_se * np.sqrt(self.replicate_number), nobs2=self.replicate_number,
+        #                  equal_var=True) # possibly heteroskedatic. But dont think so.
+        # if t > 0.05:
+        #     return "Additive"  # no significant epistasis
         if nor_emp_mean >= nor_theor_mean and emp_lower <= theor_upper:
             return "Additive"  # no significant epistasis
         elif nor_emp_mean <= nor_theor_mean and emp_upper >= theor_lower:
@@ -365,16 +371,17 @@ class Epistatic(_EA, _EB):
         elif nor_emp_mean > nor_theor_mean:
             sign = "+"
         else:
-            sign = "Impossible"  # this is not correct.
+            return "Impossible"  # this is not correct.
         positivity = 0
         for parent in combination:  # elt3 in elt2:
-            parent_signage = list(self.mean_and_sd_dic.keys())[parent - 1]
-            positivity += 1 if self.mean_and_sd_dic[parent_signage][0] > 0 else -1
+            positivity += 1 if self.get_empirical_for_element(parent)[0] - self.avgWT > 0 else -1
         if abs(positivity) != len(combination):
             return f"{sign} Sign epistasis"
         elif (positivity > 0 and nor_emp_mean > 0) or (positivity < 0 and nor_emp_mean < 0):
+            # count > 0 and double_mutant_avg > 0 or count < 0 and double_mutant_avg < 0
             return f"{sign} Magnitude epistasis"
         elif (positivity > 0 and nor_emp_mean < 0) or (positivity < 0 and nor_emp_mean > 0):
+            # count > 0 and double_mutant_avg < 0 or count < 0 and double_mutant_avg > 0
             return f"{sign} Reciprocal sign epistasis"
         else:
             return "Insufficient data"
@@ -393,7 +400,22 @@ class Epistatic(_EA, _EB):
                 .replace("'", "")
                 .replace(" ", ""))
 
-    def _get_empirical_for_signage(self, signage):
+    def get_empirical_for_element(self, element: int) -> List[float]:
+        """
+        given a off-by-one empirical index return the avg and ste
+
+        :param index: off-by-one index. 1 = wt.
+        :return: avg & sd_err
+        """
+        signage = self.element2signage(element)
+        return self.mean_and_sd_dic[signage]
+
+    def element2signage(self, element: int) -> str:
+        return list(self.mean_and_sd_dic.keys())[element - 1]
+
+
+
+    def _get_empirical_for_signage(self, signage: Iterable) -> List[float]:
         clean_signage = self.strigify(signage)
         if clean_signage in self.mean_and_sd_dic:
             return list(self.mean_and_sd_dic[clean_signage])
@@ -401,20 +423,34 @@ class Epistatic(_EA, _EB):
             raise ValueError(f'Experimental values could not be calculated because of odd +/- format ({signage} --> {clean_signage})')
 
     def _get_theoretical_for_combination(self, combination: Tuple[int]):
+        parents_means = []
+        parents_var = []
+        for parent in combination:
+            parents_means.append(self.get_empirical_for_element(parent)[0] - self.avgWT)
+            replicates = np.array(self.data_array[parent - 1][self.mutation_number:]).astype(np.float64)
+            parents_var.append(np.nanvar(replicates))
+        theor_mean = np.nansum(parents_means) + self.avgWT
+        theor_se = np.sqrt(np.nansum(parents_var)/self.replicate_number)
+        return [theor_mean, theor_se]
+
+
         # So the theoretical mean/sd is the sum of the benefits of each
         # this is not quite correct.
-        parent_replicates = np.zeros((1, len(self.replicate_matrix[0])))
+        #parent_replicates = np.zeros((1, len(self.replicate_matrix[0])))
         # But isn't len(self.replicate_matrix[0]) simply 2^self.mutation_number?
-        for parent in combination:
-            parent_replicates += self.replicate_matrix[parent - 1] - self.avgWT  # np elementwise
-        # the following ratio  is for sterr.
-        # The rooted part (N_replicates) is == len(replicates) if no nans present.
-        parent_replicates = parent_replicates.astype(np.float64)
-        N_replicates = np.count_nonzero(~np.isnan(parent_replicates))
-        theor_mean = np.nansum(parent_replicates) + self.avgWT
-        if N_replicates > 0:
-            theor_sd = (np.nanstd(parent_replicates) / math.sqrt(N_replicates))
-            # NB. Blind refactoring: list(theor_mean) in S, good_one in C. Different types??
-        else:
-            theor_sd = np.nan
-        return theor_mean, theor_sd
+        # the following is incorrect.
+        # print('bg', self.avgWT)
+        # for parent in combination:
+        #     print(self.replicate_matrix[parent - 1])
+        #     parent_replicates += self.replicate_matrix[parent - 1] - self.avgWT  # np elementwise
+        # # the following ratio  is for sterr.
+        # # The rooted part (N_replicates) is == len(replicates) if no nans present.
+        # parent_replicates = parent_replicates.astype(np.float64)
+        # N_replicates = np.count_nonzero(~np.isnan(parent_replicates))
+        # theor_mean = np.nansum(parent_replicates) + self.avgWT
+        # if N_replicates > 0:
+        #     theor_sd = (np.nanstd(parent_replicates) / math.sqrt(N_replicates))
+        #     # NB. Blind refactoring: list(theor_mean) in S, good_one in C. Different types??
+        # else:
+        #     theor_sd = np.nan
+        #return theor_mean, theor_sd

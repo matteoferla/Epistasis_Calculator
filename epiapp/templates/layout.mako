@@ -52,7 +52,7 @@
     </head>
 
     <body class="bg-light">
-        <nav class="navbar navbar-expand-lg navbar-dark bg-dark sticky-top navbar-expand-md"> <a class="navbar-brand" href="#">Epistasis calculator</a>
+        <nav class="navbar navbar-expand-lg navbar-dark bg-dark sticky-top navbar-expand-md"> <a class="navbar-brand" href="/">Epistasis calculator</a>
             <button class="navbar-toggler"
             type="button" data-toggle="collapse" data-target="#navbarNavDropdown" aria-controls="navbarNavDropdown"
             aria-expanded="false" aria-label="Toggle navigation"> <span class="navbar-toggler-icon"></span>
@@ -60,6 +60,8 @@
             <div class="collapse navbar-collapse" id="navbarNavDropdown">
                 <ul class="navbar-nav">
                     <li class="nav-item"> <a class="nav-link" href="https://www.biorxiv.org/content/10.1101/2020.04.14.041590v1" target="_blank" ><i class="far fa-book"></i> Underlying paper</a>
+                    </li>
+                    <li class="nav-item"> <a class="nav-link" href="/docs" id="docs"><i class="far fa-book-spells"></i> Documentation</a>
                     </li>
                     <li class="nav-item"> <a class="nav-link" href="#" id="mail"><i class="far fa-envelope"></i> Contact us</a>
                         <!--

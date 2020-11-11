@@ -412,7 +412,7 @@ all_of_it = numpy.c_[all_of_it,epistasis]
 #this all_of_it value is all the data we need, across the program we complete it as it goes
 
 
-suppinfo = ["Combinations", "Experimental average", "Experimental standard deviation", "Thoretical average", "Theoretical standard deviation", "Exp.avg - Theor.avg", "Epistasis type"]
+suppinfo = ["Combinations", "Experimental average", "Experimental standard deviation", "Theoretical average", "Theoretical standard deviation", "Exp.avg - Theor.avg", "Epistasis type"]
 
 excel_table2= pandas.DataFrame(all_of_it, columns=mutations_list+suppinfo, index=comb_index)
 excel_table3= pandas.DataFrame(foundment_values, columns=mutations_list+["Average", "Standard deviation"], index=mutant_list)

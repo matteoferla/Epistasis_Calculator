@@ -3,5 +3,6 @@ def includeme(config):
     config.add_route('home', '/')
     config.add_route('api', '/api')
     config.add_route('download', '/download')
+    config.add_route('docs', '/docs')
     config.add_route('create', '/create')
     config.add_route('demo', '/demo')
