@@ -220,7 +220,10 @@ class Epistatic(_EA, _EB):
             data = array[self.mutation_number:]
             data_float = np.array(data).astype(np.float64)
             mutant = self.strigify(array[:self.mutation_number])
-            average = float(np.nanmean(data_float))
+            if not self.median: # mean
+                average = float(np.nanmean(data_float))
+            else:
+                average = float(np.nanmedian(data_float))
             N_replicates = np.count_nonzero(~np.isnan(data_float))
             if N_replicates:  # non-empty row.
                 std = float(np.nanstd(data_float)) / math.sqrt(N_replicates)
@@ -411,18 +414,35 @@ class Epistatic(_EA, _EB):
         return self.mean_and_sd_dic[signage]
 
     def element2signage(self, element: int) -> str:
+        """
+        Given an off-by-one element (1 = wt) returns the sign str (e.g. '+-+')
+
+        :param element: int
+        :return: +-+
+        """
         return list(self.mean_and_sd_dic.keys())[element - 1]
 
 
-
     def _get_empirical_for_signage(self, signage: Iterable) -> List[float]:
+        """
+        Returns for a give sign str/list/np.ndarray the empirical theoretical mean and the se
+
+        :param combination: (2,3) style.
+        :return: mean, se
+        """
         clean_signage = self.strigify(signage)
         if clean_signage in self.mean_and_sd_dic:
             return list(self.mean_and_sd_dic[clean_signage])
         else:
             raise ValueError(f'Experimental values could not be calculated because of odd +/- format ({signage} --> {clean_signage})')
 
-    def _get_theoretical_for_combination(self, combination: Tuple[int]):
+    def _get_theoretical_for_combination(self, combination: Tuple[int]) -> List[float]:
+        """
+        Returns for a give combination the additive theoretical mean and the se
+
+        :param combination: (2,3) style.
+        :return:
+        """
         parents_means = []
         parents_var = []
         for parent in combination:

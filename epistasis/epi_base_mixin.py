@@ -11,7 +11,8 @@ class EpiBaseMixin:
                  mutant_list=None,
                  foundment_values=None,
                  data_array=None,
-                 replicate_matrix=None):
+                 replicate_matrix=None,
+                 median=False):
         """
 
         :param your_study: Do you use selectivity or conversion values? Please answer with S (Selectivity) or C (Conversion):
@@ -67,6 +68,7 @@ class EpiBaseMixin:
         self.combs_only = None
         self.comb_index = None
         self.stats = []
+        self.median = median
 
     @property
     def all_of_it(self):

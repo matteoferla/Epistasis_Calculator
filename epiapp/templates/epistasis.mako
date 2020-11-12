@@ -33,13 +33,23 @@
     <div class="card-body" id="directly">
         <div class="row">
             <div class="col-xl-4 col-xl-3 col-lg-12">
-                <div class="custom-control custom-switch">
-                  <input type="checkbox" class="custom-control-input" id="zeroWT">
-                  <label class="custom-control-label" for="zeroWT"> centre Wild Type
-                    <i class="far fa-question-circle" style="cursor: pointer;" data-toggle="modal" data-target="#zeroWTModal"></i></label>
+                <div class="row">
+                    <div class="col-12">
+                        <div class="custom-control custom-switch">
+                          <input type="checkbox" class="custom-control-input" id="zeroWT" checked>
+                          <label class="custom-control-label" for="zeroWT"> centre Wild Type
+                            <i class="far fa-question-circle" style="cursor: pointer;" data-toggle="modal" data-target="#zeroWTModal"></i></label>
+                        </div>
+                        ## <input type="radio" name="your_study" value="S"> Selectivity &#xA0;
+                        ## <input type="radio" name="your_study" value="C" checked> Conversion
+                    </div>
+                    <div class="col-12">
+                        <div class="custom-control custom-switch">
+                          <input type="checkbox" class="custom-control-input" id="median">
+                          <label class="custom-control-label" for="median"> use median not mean</label>
+                        </div>
+                    </div>
                 </div>
-                ## <input type="radio" name="your_study" value="S"> Selectivity &#xA0;
-                ## <input type="radio" name="your_study" value="C" checked> Conversion
             </div>
             <div class="col-xl-3 col-xl-3">
                 <div class="input-group">

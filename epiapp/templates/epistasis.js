@@ -108,6 +108,7 @@ function makeGraphs(rawData) {
 
 
 $('#submit').click(function () {
+    // THIS IS THE FILE UPLOAD ROUTE
     $("#results").html('RUNNING!');
     var data = new FormData();
     data.append("file", document.getElementById('file_upload').files[0]);
@@ -146,6 +147,7 @@ $('#submit').click(function () {
 
 
 $('#submit_table').click(function () {
+    // THIS IS TTHE TABLE UPLOAD ROUTE
     $("#results").html('RUNNING!');
     var mutation_number = parseFloat($("#mutation_number2").val());
     var replicate_number = parseFloat($("#replicate_number2").val());
@@ -178,6 +180,7 @@ $('#submit_table').click(function () {
         mutation_number: mutation_number,
         replicate_number: replicate_number,
         your_study: document.getElementById("zeroWT").checked ? 'C' : 'S',
+        median: document.getElementById("median").checked,
         mutations_list: mutations_list,
         foundment_values: foundment_values,
         replicate_matrix: replicate_matrix,

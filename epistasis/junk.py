@@ -43,7 +43,7 @@ class JunkEpi:
         grand_final = []
         all_of_it = []
         keys = list(self.mean_and_sd_dic.keys())
-        WT = keys[0]
+        WT = self.WT
         avgWT = self.mean_and_sd_dic[WT][0]
         for elt in self.final_comb_table:
             for elt2 in self.mean_and_sd_dic.keys():
@@ -146,7 +146,7 @@ class JunkEpi:
         what_epi = []
         i = 0
         keys = list(self.mean_and_sd_dic.keys())
-        WT = keys[0]
+        WT = self.WT
         avgWT = self.mean_and_sd_dic[WT][0]
         for elt in all_of_it:
             noinspi = elt[len(self.mutations_list) + 1:]
