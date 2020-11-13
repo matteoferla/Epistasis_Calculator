@@ -1,10 +1,57 @@
 import pandas as pd
 import numpy as np
 
+from typing import Dict, Tuple, List, Optional
+
 from .epi_base_mixin import EpiBaseMixin
 
 class EpiAuxMixin(EpiBaseMixin):
-    # === Alt input
+    # === Alt inputs
+
+    @classmethod
+    def from_mean(cls,
+                 stats: Dict[str, Tuple[float, float]],
+                 replicate_number:int,
+                 mutation_names:Optional[List[str]]=None,
+                 mutant_names:Optional[List[str]]=None,
+                 wildtype_centred=True,
+                 median=False):
+        """
+
+        :param stats: {'+--': [12, 1], etc.}
+        :param replicate_number:
+        :param wild_type_centered:
+        :param median:
+        :return:
+        """
+
+        self = cls.__new__(cls)
+        self.replicate_number = replicate_number
+        self.mean_and_sd_dic = stats
+        self.wildtype_centred = wildtype_centred
+        mutation_number = len(list(stats.keys())[0])
+        # A mutation is a specific residue mutation. A mutant (=variant) is a combination of zero or more mutations.
+        self.mutation_names, self.mutation_number = self.parse_mutations(mutation_names, mutation_number)
+        self.mutant_names, self.mutant_number = self.parse_mutants(mutant_names, mutation_number)
+
+    def parse_stats(self, stats):
+        """
+        Sanity check.
+
+        :param stats: {'+--': [12, 1], etc.}
+        :return:
+        """
+        ## sanity check
+        mut_number_check = {len(signage) for signage in stats}
+        assert len(mut_number_check) == 1, 'There is a mismatch in the length of signs'
+        for signage in stats:
+            if len(stats[signage]) == 0:
+                stats[signage] = (np.nan, np.nan)
+            elif len(stats[signage]) == 1:
+                stats[signage] = (stats[signage][0], np.nan)
+            else:
+                pass  # all good.
+        return stats
 
     @classmethod
     def user_input(cls):
@@ -14,7 +61,7 @@ class EpiAuxMixin(EpiBaseMixin):
         :return: a normal instance.
         """
         # here the first table code
-        mutations_list = []
+        mutation_names = []
         replicate_list = []
         your_study = input(
             "Do you use selectivity or conversion values? Please answer with S (Selectivity) or C (Conversion): ")
@@ -28,31 +75,31 @@ class EpiAuxMixin(EpiBaseMixin):
         for elt3 in range(1, replicate_number + 1):
             replicate_list.append("Replicate n°%s" % (elt3))
         for elt2 in range(1, mutation_number + 1):
-            mutations_list.append(input("Please indicate the mutation n°{elt2}: "))
+            mutation_names.append(input("Please indicate the mutation n°{elt2}: "))
         # call class to make instance
         cls.create_input_scheme(your_study, mutation_number, replicate_number, your_data,
-                                replicate_list=replicate_list, mutations_list=mutations_list)
+                                replicate_list=replicate_list, mutation_names=mutation_names)
         input('Please add data to the file {},save and then press the Any key.'.format(your_data))
         cls.from_file(your_study, your_data).calculate().save(outfile)
 
     @classmethod
     def create_input_scheme(cls, your_study, mutation_number, replicate_number, outfile='scheme.xlsx',
-                            replicate_list=None, mutations_list=None, mutant_list=None):
+                            replicate_list=None, mutation_names=None, mutant_list=None):
         ## Sanitise
         assert isinstance(your_study, str), 'Study can only be str value'
         mutation_number = int(mutation_number)
         replicate_number = int(replicate_number)
         assert isinstance(outfile, str), 'For now outfile and outfile2 can only be str value'
-        for l in (replicate_list, mutations_list):
+        for l in (replicate_list, mutation_names):
             if l:
-                assert isinstance(l, list), 'replicate list and mutations_list can only be blank or lists of str'
+                assert isinstance(l, list), 'replicate list and mutation_names can only be blank or lists of str'
 
         # This is really bad form. I modified the code before understanding that there were two programs in one.
         self = cls(your_study=your_study,
                    mutation_number=mutation_number,
                    replicate_number=replicate_number,
                    replicate_list=replicate_list,
-                   mutations_list=mutations_list,
+                   mutation_names=mutation_names,
                    mutant_list=mutant_list)
 
         # these lines are very imortant to make a list of the mutations, a list of the replicates names and the mutants names. They will be used to make the table and combinations.
@@ -70,7 +117,7 @@ class EpiAuxMixin(EpiBaseMixin):
         final_value_list = self.value_list_sorter(value_list)  # this is our sorted sign list !
 
         excel_table1 = pd.DataFrame(self.table_filler(final_table1, final_value_list),
-                                        columns=self.mutations_list + self.replicate_list, index=self.mutant_list)
+                                        columns=self.mutation_names + self.replicate_list, index=self.mutant_list)
         writer = pd.ExcelWriter(outfile)
         excel_table1.to_excel(writer, sheet_name="sheet_name",
                               index=True)  # finally we write everything on a new excel, of which the name is given by the user
@@ -101,7 +148,7 @@ class EpiAuxMixin(EpiBaseMixin):
             elif str(v) not in '-+':
                 break
         replicate_number = len(table.iloc[0]) - mutation_number
-        mutations_list = list(table)[:mutation_number]
+        mutation_names = list(table)[:mutation_number]
         replicate_list = list(table)[mutation_number:]
         mutant_list = list(table.index)
 
@@ -116,7 +163,7 @@ class EpiAuxMixin(EpiBaseMixin):
                    mutation_number=mutation_number,
                    replicate_number=replicate_number,
                    replicate_list=replicate_list,
-                   mutations_list=mutations_list,
+                   mutation_names=mutation_names,
                    mutant_list=mutant_list,
                    foundment_values=foundment_values,
                    data_array=data_array,
@@ -126,12 +173,12 @@ class EpiAuxMixin(EpiBaseMixin):
     def theoretical_results(self):
         suppinfo = ["Combinations", "Experimental average", "Experimental standard error", "Theoretical average",
                     "Theoretical standard error", "Exp.avg - Theor.avg", "Epistasis type"]
-        return pd.DataFrame(self.all_of_it, columns=self.mutations_list + suppinfo, index=self.comb_index)
+        return pd.DataFrame(self.all_of_it, columns=self.mutation_names + suppinfo, index=self.comb_index)
 
     @property
     def experimental_results(self):
         return pd.DataFrame(self.foundment_values,
-                            columns=self.mutations_list + ["Average", "Standard deviation"],
+                            columns=self.mutation_names + ["Average", "Standard deviation"],
                             index=self.mutant_list)
 
     ##### Other methods

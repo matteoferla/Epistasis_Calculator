@@ -20,7 +20,7 @@ from epistasis import Epistatic
 
 # ======================================================================================================================
 if __name__ == "__main__":
-    # your_study, mutation_number, replicate_number, your_data, outfile, replicate_list, mutations_list)
+    # your_study, mutation_number, replicate_number, your_data, outfile, replicate_list, mutation_names)
     parser = argparse.ArgumentParser(description=__description__)
     parser.add_argument("your_study",
                         help="Do you use selectivity or conversion values? Please answer with S (Selectivity) or C (Conversion)")

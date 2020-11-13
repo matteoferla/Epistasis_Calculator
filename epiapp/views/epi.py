@@ -45,23 +45,23 @@ class Epistaticizer:
             self.request.session['epistasis'] = filename
             suppinfo = ["Combinations", "Experimental average", "Experimental standard error", "Theoretical average",
                         "Theoretical standard error", "Exp.avg - Theor.avg", "Epistasis type"]
-            raw = {'theoretical': {'data': data.all_of_it.tolist(), 'columns': data.mutations_list + suppinfo,
+            raw = {'theoretical': {'data': data.all_of_it.tolist(), 'columns': data.mutation_names + suppinfo,
                                    'rows': data.comb_index},
                    'empirical': {'data': data.foundment_values.tolist(),
-                                 'columns': data.mutations_list + ["Average", "Standard error"],
+                                 'columns': data.mutation_names + ["Average", "Standard error"],
                                  'rows': data.mutant_list}}
             raw = self.sanitize_nan(raw)
             table = '<div class="table-responsive"><table class="table table-striped"><thead class="thead-dark">{thead}</thead><tbody>{tbody}</tbody></table></div>'
             td = '<td>{}</td>'
             th = '<th>{}</th>'
             tr = '<tr>{}</tr>'
-            theo = table.format(thead=tr.format(''.join([th.format(x) for x in [''] + data.mutations_list + suppinfo])),
+            theo = table.format(thead=tr.format(''.join([th.format(x) for x in [''] + data.mutation_names + suppinfo])),
                                 tbody=''.join([tr.format(th.format(data.comb_index[i] + ''.join(
                                     [td.format(x) if isinstance(x, str) or isinstance(x, tuple) else td.format(round(x, 1))
                                      for
                                      x in data.all_of_it[i]]))) for i in range(len(data.comb_index))]))
             emp = table.format(thead=tr.format(
-                ''.join([th.format(x) for x in [''] + data.mutations_list + ["Average", "Standard error"]])),
+                ''.join([th.format(x) for x in [''] + data.mutation_names + ["Average", "Standard error"]])),
                 tbody=''.join([tr.format(th.format(data.mutant_list[i] + ''.join(
                     [td.format(x) if isinstance(x, str) or isinstance(x, tuple) else td.format(round(x, 1)) for x
                      in data.foundment_values[i]]))) for i in range(len(data.mutant_list))]))

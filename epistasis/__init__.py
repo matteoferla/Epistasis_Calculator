@@ -24,7 +24,7 @@ class Epistatic(_EA, _EB):
     Running from panda table:
                 Epistatic.from_pandas('C',table)
     Running from values:
-                Epistatic(your_study, mutation_number,replicate_number,replicate_list,mutations_list, mutant_list,foundment_values,data_array,replicate_matrix)
+                Epistatic(your_study, mutation_number,replicate_number,replicate_list,mutation_names, mutant_list,foundment_values,data_array,replicate_matrix)
             Methods:
 
             * create_combination
@@ -50,7 +50,8 @@ class Epistatic(_EA, _EB):
             raise AssertionError('No data')
 
         # This function gives a tuple (dictionary of mutants associated with mean and std, array of mean and std)
-        self.mean_and_sd_dic, array_mean_and_sd = self.mean_and_sd_maker()
+        if not self.mean_and_sd_dic:
+            self.mean_and_sd_dic, array_mean_and_sd = self.mean_and_sd_maker()
         # here we just take the first element of the tuple,
         # which is the dictionarry. I frankly don't even remember why I did a tuple and not just the dictionary but hey)
         # line with Mutant_number
@@ -79,7 +80,7 @@ class Epistatic(_EA, _EB):
         for elt in ordered_combs:
             signs_only.append(elt[0])
         # same as above but for the signs only
-        reshaped_signs = np.reshape(signs_only, ((len(signs_only), (len(self.mutations_list)))))
+        reshaped_signs = np.reshape(signs_only, ((len(signs_only), (len(self.mutation_names)))))
         # in the case of 2 mutants only the math needs a hack or (2,1) => (1,1) fails. MF
         # reshaped_combs normally is a np.array of tuples... but gets cast "incorrectly" when there's only one.
         if len(signs_only) != 1:  # more than 2
@@ -116,9 +117,9 @@ class Epistatic(_EA, _EB):
         # avgWT is zero for selectivity.
         if self._avgWT is not None:
             pass
-        elif self.your_study == 'S':
+        elif not self.wildtype_centred: # S-mode
             self._avgWT = 0
-        elif self.your_study == 'C':
+        elif self.wildtype_centred: # C-mode
             self._avgWT = self.mean_and_sd_dic[self.WT][0]
         else:
             raise ValueError
@@ -147,9 +148,9 @@ class Epistatic(_EA, _EB):
                     # the form of a dictionary !
                     evolution_dice = random.randint(0, 1)
                     if evolution_dice == 0:
-                        elt[self.mutations_list[elt2 - 1]] = "+"
+                        elt[self.mutation_names[elt2 - 1]] = "+"
                     else:
-                        elt[self.mutations_list[elt2 - 1]] = "-"
+                        elt[self.mutation_names[elt2 - 1]] = "-"
                 count = 0
                 for elt3 in dic_list:
                     if elt.items() != elt3.items():
@@ -288,7 +289,7 @@ class Epistatic(_EA, _EB):
         """
         final_comb_list = origins  # we retake the combination list we obtain in the previous function
         cycle_number = len(
-            self.mutations_list)  # here we define the number of cycle the function will do. Everytime we have a new mutation the nuber of cycle increases by 1
+            self.mutation_names)  # here we define the number of cycle the function will do. Everytime we have a new mutation the nuber of cycle increases by 1
         comb_comparator = []
         if cycle_number > 1:  # that is the recursivity condition. The function will stop after the number of cycles is down to one
             for comb in final_comb_list:  # so the idea is to scan the comb list we obtained above. In that case we can make combinations of combinations to obtain more combinations !
@@ -348,7 +349,7 @@ class Epistatic(_EA, _EB):
             # now it is a list of dict
             # grand_final is a table
             if self.verbose:
-                print('mutationlist', self.mutations_list)
+                print('mutationlist', self.mutation_names)
                 print('grand_final', data)
             # =========================================
         return data
@@ -393,7 +394,7 @@ class Epistatic(_EA, _EB):
         # [+,-,+] = +-+
         # this operation, which I am not sure why it is needed, was repeated  - MF
         convert = lambda value: value if isinstance(value, str) else ('-', '+')[int(value)]
-        return (''.join([convert(x)  for x in signage]).replace('0', '-')
+        return (''.join([convert(x) for x in signage]).replace('0', '-')
                 .replace('–', '-')  # en dash
                 .replace('–', '-')  # em dash
                 .replace('1', '+')

@@ -27,7 +27,7 @@ Please see the docstrings in the methods for more info.
               mutation_number, 
               replicate_number, 
               replicate_list=None, 
-              mutations_list=None, 
+              mutation_names=None, 
               mutant_list=None, 
               foundment_values=None, 
               data_array=None, 
@@ -50,7 +50,7 @@ Running from panda table:
     
 Running from values:
 
-    epi = Epistatic(your_study, mutation_number,replicate_number,replicate_list,mutations_list, mutant_list,foundment_values,data_array,replicate_matrix)
+    epi = Epistatic(your_study, mutation_number,replicate_number,replicate_list,mutation_names, mutant_list,foundment_values,data_array,replicate_matrix)
 
 To do the actual calculations...
 
@@ -69,7 +69,7 @@ The attributes are:
 * mutation_number: Please indicate your mutation number:
 * replicate_number: Please indicate your replicate number (if some replicates are faulty, please fill the table with the average of the others otherwise the program might give unexpected results) :
 * replicate_list (optinal): Replicate n°%s
-* mutations_list (optinal): Please indicate the mutation n°%s:
+* mutation_names (optinal): Please indicate the mutation n°%s:
 * mutant_list (optinal):
 * foundment_values (optinal):  The +/- np array
 * data_array (optinal):        All the np array

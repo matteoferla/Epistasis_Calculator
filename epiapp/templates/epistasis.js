@@ -151,12 +151,12 @@ $('#submit_table').click(function () {
     $("#results").html('RUNNING!');
     var mutation_number = parseFloat($("#mutation_number2").val());
     var replicate_number = parseFloat($("#replicate_number2").val());
-    var mutations_list = new Array(mutation_number).fill('xxx');
+    var mutation_names = new Array(mutation_number).fill('xxx');
     for (let i = 0; i < mutation_number; i++) {
         if ($("#M" + (i + 1).toString()).val()) {
-            mutations_list[i] = $("#M" + (i + 1).toString()).val();
+            mutation_names[i] = $("#M" + (i + 1).toString()).val();
         } else {
-            mutations_list[i] = "#M" + (i + 1).toString();
+            mutation_names[i] = "#M" + (i + 1).toString();
         }
     }
     var mpower = Math.pow(2, mutation_number);
@@ -181,7 +181,7 @@ $('#submit_table').click(function () {
         replicate_number: replicate_number,
         your_study: document.getElementById("zeroWT").checked ? 'C' : 'S',
         median: document.getElementById("median").checked,
-        mutations_list: mutations_list,
+        mutation_names: mutation_names,
         foundment_values: foundment_values,
         replicate_matrix: replicate_matrix,
         data_array: data_array
