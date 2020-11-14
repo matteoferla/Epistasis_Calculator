@@ -375,17 +375,23 @@ class Epistatic(_EA, _EB):
         elif nor_emp_mean > nor_theor_mean:
             sign = "+"
         else:
-            return "Impossible"  # this is not correct.
+            raise ValueError("Mathematically Impossible")  # this is not correct.
+        # determine if contribution sign is the same for all parent variants
         positivity = 0
-        for parent in combination:  # elt3 in elt2:
+        for parent in combination:  # former code: elt3 in elt2:
             positivity += 1 if self.get_empirical_for_element(parent)[0] - self.avgWT > 0 else -1
         if abs(positivity) != len(combination):
+            # the contribution have different signs
             return f"{sign} Sign epistasis"
         elif (positivity > 0 and nor_emp_mean > 0) or (positivity < 0 and nor_emp_mean < 0):
-            # count > 0 and double_mutant_avg > 0 or count < 0 and double_mutant_avg < 0
+            # all contribution have positive signs and the empirical mean is positive
+            # all contribution have negative signs and the empirical mean is negative
+            # former code: count > 0 and double_mutant_avg > 0 or count < 0 and double_mutant_avg < 0
             return f"{sign} Magnitude epistasis"
         elif (positivity > 0 and nor_emp_mean < 0) or (positivity < 0 and nor_emp_mean > 0):
-            # count > 0 and double_mutant_avg < 0 or count < 0 and double_mutant_avg > 0
+            # all contribution have positive signs but the empirical mean is negative
+            # all contribution have negative signs and the empirical mean is positive
+            # former code: count > 0 and double_mutant_avg < 0 or count < 0 and double_mutant_avg > 0
             return f"{sign} Reciprocal sign epistasis"
         else:
             return "Insufficient data"
