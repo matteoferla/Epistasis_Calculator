@@ -1,12 +1,28 @@
 # Epistasis
 ## Description
-Script v1.0 written by Paul Lubrano. Slightly modified by myself (v1.1) and made app compatible (v1.2).
-Original file can be found in `epistasis/old_files`.
+
+> This has all the code that runs on [epistasis.mutanalyst.com](https://epistasis.mutanalyst.com/).
+
+Combining different mutations into the same variant often does not result in an additive effect, 
+instead the mutations can antagonise or synergise, a phenomenon called epistasis.
+
+This tool calculates the epistatic effect different mutations can have on a protein structure.
+
+For example, if a mutant has 3 mutations, there are different combinations possible: Three single mutants and three double mutants.
+The creation of these 6 mutants as well as the parent protein and triple mutant make a total of 8 mutants.
+This would result in a complete dataset (full deconvolution of a triple mutant).
+Alternatively, it is not necessary to deconvolute all mutations from a multi-mutational variant, since this would be very time consuming.
+Instead, it is possible to include different subsets of mutations in double, triple, quadruple or nth mutants.
 
 * To run the webserver locally see run `python3 app.py`
 * To use as a module `from epistasis import Epistatic`
 * To run as a command line script, run `python3 epistasis_script.py` with appropriate arguments
 * To run the original script, in python call `Epistatic.user_input()` (don't)
+
+## Authorship
+
+Script v1.0 written by Paul Lubrano. Slightly modified by myself (v1.1) and made app compatible (v1.2).
+Original file can be found in `epistasis/old_files`.
 
 ## Folders
 
