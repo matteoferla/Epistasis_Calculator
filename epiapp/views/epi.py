@@ -10,7 +10,7 @@ log = logging.getLogger(__name__)
 
 @view_defaults(route_name='api')
 class Epistaticizer:
-    temp_path = os.path.join('epiapp', 'temp')
+    temp_path = '/tmp'
     demo_data = {} # filled after declaration by `load_demo_data`
 
     def __init__(self, request):
