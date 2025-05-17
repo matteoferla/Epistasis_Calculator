@@ -84,9 +84,14 @@ class Epistatic(_EA, _EB):
         # in the case of 2 mutants only the math needs a hack or (2,1) => (1,1) fails. MF
         # reshaped_combs normally is a np.array of tuples... but gets cast "incorrectly" when there's only one.
         if len(signs_only) != 1:  # more than 2
-            reshaped_combs = np.reshape(self.combs_only, (len(signs_only), 1))
+            # hacky fix years later. I don't know what anything is doing here.
+            #reshaped_combs = np.reshape(self.combs_only, (len(signs_only), 1))
+            reshaped_combs = np.array(self.combs_only, dtype=object).reshape(len(signs_only), 1)
         else:
-            reshaped_combs = np.zeros((1, 1)).astype(object)
+            # ditto
+            # reshaped_combs = np.zeros((1, 1)).astype(object)
+            # reshaped_combs[0, 0] = self.combs_only[0]
+            reshaped_combs = np.empty((1, 1), dtype=object)
             reshaped_combs[0, 0] = self.combs_only[0]
 
         # reshaping everything to have a good format for the final table

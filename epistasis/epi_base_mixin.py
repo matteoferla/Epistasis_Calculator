@@ -109,7 +109,10 @@ class EpiBaseMixin:
 
     @property
     def all_of_it(self):
-        return np.array([[*stat['signage'], *[stat[key] for key in stat if key != 'signage']] for stat in self.stats])
+        return np.array([
+            [*stat['signage'], *[stat[key] for key in stat if key != 'signage']]
+            for stat in self.stats
+        ], dtype=object)
 
     def calculate(self):
         raise NotImplementedError('This is an abstract method.')
