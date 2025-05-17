@@ -8,7 +8,7 @@ version = "0.0"
 description = "epiapp"
 readme = "README.md"
 requires-python = ">=3.7"
-license = {text = "MIT"}
+license = {file = "LICENSE"}
 authors = [{name = "Matteo Ferla", email = "matteo.ferla@gmail.com"}, {name = "Paul Lubrano", email = ""}]
 keywords = ["epistasis", "calculator"]
 classifiers = [
@@ -37,7 +37,7 @@ testing = [
 Homepage = "epistasis.matteoferla.com"
 
 [tool.setuptools]
-packages = ["epiapp"]  # Or use `find` if you have multiple subpackages
+include-package-data = true
 
 [tool.setuptools.packages.find]
 where = ["."]
