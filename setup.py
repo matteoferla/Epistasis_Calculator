@@ -12,7 +12,8 @@ requires = [
     'pyramid_mako',
     'pyramid_debugtoolbar',
     'waitress',
-    'pandas'
+    'pandas',
+    'openpyxl'
 ]
 
 tests_require = [

@@ -24,6 +24,7 @@ dependencies = [
     "pyramid_debugtoolbar",
     "waitress",
     "pandas",
+    "openpyxl"
 ]
 
 [project.optional-dependencies]
